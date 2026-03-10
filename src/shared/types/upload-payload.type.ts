@@ -1,0 +1,1 @@
+export type UploadPayloadType<T> = { body: T; arquivos: Express.Multer.File[] };

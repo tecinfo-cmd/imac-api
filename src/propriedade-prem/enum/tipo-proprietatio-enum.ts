@@ -1,0 +1,5 @@
+
+export enum TipoProprietatioEnum {
+  PROPRIETARIO = "PROPRIETARIO",
+  CO_PROPRIETARIO = "COPROPRIETARIO"
+}
