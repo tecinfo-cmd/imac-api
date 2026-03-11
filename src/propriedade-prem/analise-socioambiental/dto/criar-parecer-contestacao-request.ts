@@ -1,5 +1,12 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsArray, IsNumber, IsNumberString, IsOptional, IsPositive, IsString, ValidateNested } from 'class-validator';
+import {
+  IsArray,
+  IsNumber,
+  IsNumberString,
+  IsOptional,
+  IsString,
+  ValidateNested,
+} from 'class-validator';
 import { BaseUploadRequest } from '../../../shared/dto/base-upload-request.dto';
 import { SituacaoContestacaoEnum } from '../enum/situacao-contestacao.enum';
 import { Type } from 'class-transformer';
@@ -7,25 +14,25 @@ import { IsWktPolygon } from '../../../shared/decorators/is-wkt-polygon.decorato
 
 export class Poligono {
   @ApiProperty({
-      name: 'poligono',
-      required: true,
-      type: String
+    name: 'poligono',
+    required: true,
+    type: String,
   })
   @IsString()
   poligono: string;
 
   @ApiProperty({
-      name: 'idTad',
-      required: true,
-      type: Number
+    name: 'idTad',
+    required: true,
+    type: Number,
   })
   @IsNumber()
   idTad: number;
 
   @ApiProperty({
-      name: 'areaARegenerar',
-      required: true,
-      type: Number
+    name: 'areaARegenerar',
+    required: true,
+    type: Number,
   })
   @IsNumber()
   areaARegenerar: number;
@@ -34,7 +41,7 @@ export class Poligono {
     name: 'tipo',
     required: true,
     enum: ['Contestação por laudo', 'Contestação de autorização de supressão'],
-    type: String
+    type: String,
   })
   @IsString()
   tipo: 'Contestação por laudo' | 'Contestação de autorização de supressão';
@@ -42,7 +49,7 @@ export class Poligono {
   @ApiProperty({
     name: 'wkt',
     required: true,
-    type: String
+    type: String,
   })
   @IsString()
   @IsWktPolygon()
@@ -51,23 +58,23 @@ export class Poligono {
   @ApiProperty({
     name: 'tipoDeteccao',
     required: true,
-    type: Number
+    type: Number,
   })
-  @IsNumberString()
+  @IsNumber()
   tipoDeteccao?: number;
 }
 
 const statusValidosParaParecer = Object.values(SituacaoContestacaoEnum).filter(
-  (status) => status !== SituacaoContestacaoEnum.EM_ANALISE
+  (status) => status !== SituacaoContestacaoEnum.EM_ANALISE,
 );
 
-export class  CriarParecerContestacaoRequest extends BaseUploadRequest {
+export class CriarParecerContestacaoRequest extends BaseUploadRequest {
   @ApiProperty({
     name: 'status',
     required: true,
     enum: statusValidosParaParecer,
     enumName: 'SituacaoContestacaoEnum',
-    type: String
+    type: String,
   })
   @IsString()
   status: SituacaoContestacaoEnum;
@@ -76,7 +83,8 @@ export class  CriarParecerContestacaoRequest extends BaseUploadRequest {
     name: 'poligonos',
     required: false,
     type: 'string',
-    example: '[{"poligono": "Prodes 2009", "idTad": 1, "areaARegenerar": 10.5, "tipo": "Contestação por laudo", "wkt": "POLYGON(())", "tipoDeteccao": 2}]'
+    example:
+      '[{"poligono": "Prodes 2009", "idTad": 1, "areaARegenerar": 10.5, "tipo": "Contestação por laudo", "wkt": "POLYGON(())", "tipoDeteccao": 2}]',
   })
   @IsArray()
   @IsOptional()
@@ -87,7 +95,7 @@ export class  CriarParecerContestacaoRequest extends BaseUploadRequest {
   @ApiProperty({
     name: 'valorMulta',
     required: false,
-    type: Number
+    type: Number,
   })
   @IsNumberString()
   @IsOptional()
@@ -96,12 +104,9 @@ export class  CriarParecerContestacaoRequest extends BaseUploadRequest {
   @ApiProperty({
     name: 'descontoPercentual',
     required: false,
-    type: Number
+    type: Number,
   })
   @IsNumberString()
   @IsOptional()
   descontoPercentual?: number;
-
-
 }
-
