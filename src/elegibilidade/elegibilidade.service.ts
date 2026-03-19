@@ -227,7 +227,10 @@ export class ElegibilidadeService {
         nome: solicitacaoEligibilidade.nomePropriedade,
         mensagem: 'Elegibilidade',
       });
-      // await this.enviarEmailDeConfirmacaoDeSolicitacao(solicitacaoEligibilidade, propriedadeConsulta);
+      await this.enviarEmailDeConfirmacaoDeSolicitacao(
+        solicitacaoEligibilidade,
+        propriedadeConsulta,
+      );
     } catch (error) {
       throw new NegocioException(error.status, error.message);
     }
