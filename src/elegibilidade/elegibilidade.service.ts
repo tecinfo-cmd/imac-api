@@ -1,7 +1,15 @@
 import { CreateElegibilidadeRequestDto } from './dto/create-elegibilidade-request.dto';
 import { Repository } from 'typeorm';
-import { SolicitacaoElegibilidade, StatusSolicitacaoEligibilidade } from './entities/solicitacao-elegibilidade.entity';
-import { BadRequestException, forwardRef, Inject, Injectable } from '@nestjs/common';
+import {
+  SolicitacaoElegibilidade,
+  StatusSolicitacaoEligibilidade,
+} from './entities/solicitacao-elegibilidade.entity';
+import {
+  BadRequestException,
+  forwardRef,
+  Inject,
+  Injectable,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { plainToInstance } from 'class-transformer';
 import { HttpService } from '@nestjs/axios';
@@ -25,11 +33,8 @@ import { PagamentoRecusadoTemplate } from '../email/templates/pagamento-recusado
 import { Propriedade } from '../propriedade-prem/entities/propriedade.entity';
 import { MensagemService } from '../message/mensagem.service';
 
-
-
 @Injectable()
 export class ElegibilidadeService {
-
   constructor(
     @InjectRepository(SolicitacaoElegibilidade)
     private readonly solicitacaoElegibilidadeRepository: Repository<SolicitacaoElegibilidade>,
@@ -41,9 +46,8 @@ export class ElegibilidadeService {
     private readonly emailService: EmailService,
     @Inject(forwardRef(() => AgrotoolsService))
     private readonly agrotoolsService: AgrotoolsService,
-    private readonly  mensagemService: MensagemService,
-  ) { }
-
+    private readonly mensagemService: MensagemService,
+  ) {}
 
   async listarPaginado(
     email?: string,
@@ -54,36 +58,58 @@ export class ElegibilidadeService {
     nomePropriedade?: string,
     cpfCnpj?: string,
     page = 0,
-    size = 10
+    size = 10,
   ): Promise<[any[], number]> {
     const query = this.solicitacaoElegibilidadeRepository
       .createQueryBuilder('eligibilidade')
       .leftJoin('eligibilidade.propriedade', 'propriedade')
-      .select(["eligibilidade.id", "eligibilidade.nomePropriedade", "eligibilidade.telefone",
-        "eligibilidade.email","eligibilidade.cpfCnpj","eligibilidade.carFederal","eligibilidade.status","eligibilidade.dataAtualizacao"])
-      .addSelect([
-        "propriedade.carFederal",
-        "propriedade.carEstadual",
-        "propriedade.nomePropriedade"
+      .select([
+        'eligibilidade.id',
+        'eligibilidade.nomePropriedade',
+        'eligibilidade.telefone',
+        'eligibilidade.email',
+        'eligibilidade.cpfCnpj',
+        'eligibilidade.carFederal',
+        'eligibilidade.status',
+        'eligibilidade.dataAtualizacao',
       ])
-      .leftJoinAndSelect('TB_PROPRIEDADE_PROPRIETARIOS_TB_PROPRIETARIOS', 'pp', 'pp."ID_PROPRIEDADE" = propriedade."ID"')
-      .leftJoinAndSelect('TB_PROPRIETARIOS', 'pr', 'pr."ID" = pp."ID_PROPRIETARIO"')
+      .addSelect([
+        'propriedade.carFederal',
+        'propriedade.carEstadual',
+        'propriedade.nomePropriedade',
+      ])
+      .leftJoinAndSelect(
+        'TB_PROPRIEDADE_PROPRIETARIOS_TB_PROPRIETARIOS',
+        'pp',
+        'pp."ID_PROPRIEDADE" = propriedade."ID"',
+      )
+      .leftJoinAndSelect(
+        'TB_PROPRIETARIOS',
+        'pr',
+        'pr."ID" = pp."ID_PROPRIETARIO"',
+      )
       .leftJoinAndSelect('TB_PESSOA', 'pessoa', 'pessoa."ID" = pr."ID_PESSOA"')
-      .addSelect([
-        "pessoa.nome"
-      ])
-      .where('eligibilidade."CONFIRMACAO_EMAIL" = :confirmacaoEmail', { confirmacaoEmail: 'SIM' });
+      .addSelect(['pessoa.nome'])
+      .where('eligibilidade."CONFIRMACAO_EMAIL" = :confirmacaoEmail', {
+        confirmacaoEmail: 'SIM',
+      });
 
     if (email) {
-      query.andWhere('LOWER(eligibilidade."EMAIL") LIKE :email', { email: `%${email.toLowerCase()}%` });
+      query.andWhere('LOWER(eligibilidade."EMAIL") LIKE :email', {
+        email: `%${email.toLowerCase()}%`,
+      });
     }
 
     if (numeroCar) {
-      query.andWhere('eligibilidade."CAR_FEDERAL" LIKE :numeroCar', { numeroCar: `%${numeroCar}%` });
+      query.andWhere('eligibilidade."CAR_FEDERAL" LIKE :numeroCar', {
+        numeroCar: `%${numeroCar}%`,
+      });
     }
 
     if (carEstadual) {
-      query.andWhere('propriedade."CAR_ESTADUAL" LIKE :carEstadual', { carEstadual: `%${carEstadual}%` });
+      query.andWhere('propriedade."CAR_ESTADUAL" LIKE :carEstadual', {
+        carEstadual: `%${carEstadual}%`,
+      });
     }
 
     if (status) {
@@ -97,13 +123,18 @@ export class ElegibilidadeService {
     }
 
     if (nomePropriedade) {
-      query.andWhere('LOWER(propriedade."NOME_PROPRIEDADE") LIKE :nomePropriedade', {
-        nomePropriedade: `%${nomePropriedade.toLowerCase()}%`,
-      });
+      query.andWhere(
+        'LOWER(propriedade."NOME_PROPRIEDADE") LIKE :nomePropriedade',
+        {
+          nomePropriedade: `%${nomePropriedade.toLowerCase()}%`,
+        },
+      );
     }
 
     if (cpfCnpj) {
-      query.andWhere('eligibilidade."CPF_CNPJ" LIKE :cpfCnpj', { cpfCnpj: `%${cpfCnpj}%` });
+      query.andWhere('eligibilidade."CPF_CNPJ" LIKE :cpfCnpj', {
+        cpfCnpj: `%${cpfCnpj}%`,
+      });
     }
 
     query.orderBy('eligibilidade.dataAtualizacao', 'DESC');
@@ -116,42 +147,67 @@ export class ElegibilidadeService {
   async buscarPorId(id: number) {
     const solicitacao = await this.solicitacaoElegibilidadeRepository.findOne({
       relations: ['retornoAgrotools', 'retornoAgrotools.deteccoes'],
-      where: { id: id }
-    })
-    const response =  plainToInstance(BuscarPorIdResponse, solicitacao,{ excludeExtraneousValues: true });
+      where: { id: id },
+    });
+    const response = plainToInstance(BuscarPorIdResponse, solicitacao, {
+      excludeExtraneousValues: true,
+    });
     // @ts-ignore
-    response.retornoAgrotools.deteccoes = plainToInstance(DeteccosAgrotoolsResponse, solicitacao?.retornoAgrotools?.deteccoes);
+    response.retornoAgrotools.deteccoes = plainToInstance(
+      DeteccosAgrotoolsResponse,
+      solicitacao?.retornoAgrotools?.deteccoes,
+    );
     return response;
   }
 
-  async criarSolicitacao(createElegibilidadeRequestDto: CreateElegibilidadeRequestDto): Promise<void> {
+  async criarSolicitacao(
+    createElegibilidadeRequestDto: CreateElegibilidadeRequestDto,
+  ): Promise<void> {
     try {
-      const carWithoutMask = createElegibilidadeRequestDto.carFederal.replace(/[.]/g, '');
+      const carWithoutMask = createElegibilidadeRequestDto.carFederal.replace(
+        /[.]/g,
+        '',
+      );
 
       const propriedade = await this.propriedadePremRepository.findOne({
         where: { carFederal: carWithoutMask },
       });
 
-      if(propriedade) {
-        throw new NegocioException(422,'Propriedade já cadastrada. Acesse aplicação ou procure o suporte. ');
+      if (propriedade) {
+        throw new NegocioException(
+          422,
+          'Propriedade já cadastrada. Acesse aplicação ou procure o suporte. ',
+        );
       }
 
-      const propriedadeConsulta = await this.propriedadeConsultaRepository.findOne({
-        where: { carFederal: carWithoutMask },
-      });
+      const propriedadeConsulta =
+        await this.propriedadeConsultaRepository.findOne({
+          where: { carFederal: carWithoutMask },
+        });
 
       if (!propriedadeConsulta) {
         throw new BadRequestException('CAR não encontrado');
       }
 
-
-      const solicitacaoExistente = await this.retornoSolicitacao(createElegibilidadeRequestDto.email, createElegibilidadeRequestDto.carFederal)
+      const solicitacaoExistente = await this.retornoSolicitacao(
+        createElegibilidadeRequestDto.email,
+        createElegibilidadeRequestDto.carFederal,
+      );
       if (solicitacaoExistente) {
         if (solicitacaoExistente.confirmacaoEmail == 'NAO') {
-        //  await this.enviarEmailDeConfirmacaoDeSolicitacao(solicitacaoExistente, propriedadeConsulta)
-          await this.mensagemService.enviarMensagen({telefone: solicitacaoExistente.telefone,nome: solicitacaoExistente.nomePropriedade, mensagem: "Elegibilidade"})
+          await this.enviarEmailDeConfirmacaoDeSolicitacao(
+            solicitacaoExistente,
+            propriedadeConsulta,
+          );
+          await this.mensagemService.enviarMensagen({
+            telefone: solicitacaoExistente.telefone,
+            nome: solicitacaoExistente.nomePropriedade,
+            mensagem: 'Elegibilidade',
+          });
         }
-        throw new BadRequestException('Existe solicitação pendente para este email e car, Confirme a solicitação');
+        throw new BadRequestException(
+          'Existe solicitação pendente para este email e car, Confirme a solicitação',
+        );
       }
 
       const elegibilidadeRequest = plainToInstance(SolicitacaoElegibilidade, {
@@ -159,53 +215,68 @@ export class ElegibilidadeService {
         status: StatusSolicitacaoEligibilidade.Pendente,
         nomePropriedade: propriedadeConsulta.nomePropriedade.toUpperCase(),
         codigoMunicipio: propriedadeConsulta.codigoMunicipio,
-        confirmacaoEmail: 'NAO'
+        confirmacaoEmail: 'NAO',
       });
 
       const solicitacaoEligibilidade =
-        await this.solicitacaoElegibilidadeRepository.save(elegibilidadeRequest);
-      await this.mensagemService.enviarMensagen({telefone: solicitacaoEligibilidade.telefone,nome: solicitacaoEligibilidade.nomePropriedade, mensagem: "Elegibilidade"})
-     // await this.enviarEmailDeConfirmacaoDeSolicitacao(solicitacaoEligibilidade, propriedadeConsulta);
+        await this.solicitacaoElegibilidadeRepository.save(
+          elegibilidadeRequest,
+        );
+      await this.mensagemService.enviarMensagen({
+        telefone: solicitacaoEligibilidade.telefone,
+        nome: solicitacaoEligibilidade.nomePropriedade,
+        mensagem: 'Elegibilidade',
+      });
+      await this.enviarEmailDeConfirmacaoDeSolicitacao(
+        solicitacaoEligibilidade,
+        propriedadeConsulta,
+      );
     } catch (error) {
       throw new NegocioException(error.status, error.message);
     }
-
   }
 
   async consultaSolicitacao(email: string) {
-    return await this.solicitacaoElegibilidadeRepository.createQueryBuilder('solicitacaoElegibilidade')
+    return await this.solicitacaoElegibilidadeRepository
+      .createQueryBuilder('solicitacaoElegibilidade')
       .where('solicitacaoElegibilidade.email = :email', { email })
-      .andWhere('solicitacaoElegibilidade.status = :status', { status: 'APROVADO' })
+      .andWhere('solicitacaoElegibilidade.status = :status', {
+        status: 'APROVADO',
+      })
       .getMany();
-
   }
 
   async retornoSolicitacao(email: string, car: string) {
-    const solicitacao = await this.solicitacaoElegibilidadeRepository.createQueryBuilder('solicitacaoElegibilidade')
+    const solicitacao = await this.solicitacaoElegibilidadeRepository
+      .createQueryBuilder('solicitacaoElegibilidade')
       .where('solicitacaoElegibilidade.email = :email', { email })
       .andWhere('solicitacaoElegibilidade.carFederal =  :car', { car })
       .getOne();
     if (solicitacao) {
-      return solicitacao
+      return solicitacao;
     }
     return null;
-
   }
 
   async consultaPendentesValidacao() {
-    return await this.solicitacaoElegibilidadeRepository.createQueryBuilder('solicitacaoElegibilidade')
-      .where('solicitacaoElegibilidade.status = :status', { status: 'PENDENTE' })
+    return await this.solicitacaoElegibilidadeRepository
+      .createQueryBuilder('solicitacaoElegibilidade')
+      .where('solicitacaoElegibilidade.status = :status', {
+        status: 'PENDENTE',
+      })
       .andWhere('solicitacaoElegibilidade.transactionId IS NOT NULL')
       .getMany();
   }
 
   async consultaPendentesFrigorico() {
-    return await this.solicitacaoElegibilidadeRepository.createQueryBuilder('solicitacaoElegibilidade')
-      .where('solicitacaoElegibilidade.status = :status', { status: 'CONSULTADO' })
+    return await this.solicitacaoElegibilidadeRepository
+      .createQueryBuilder('solicitacaoElegibilidade')
+      .where('solicitacaoElegibilidade.status = :status', {
+        status: 'CONSULTADO',
+      })
       .andWhere('solicitacaoElegibilidade.transactionId IS NOT NULL')
       .getMany();
   }
-
 
   async consultaPropriedadeConsultaCar(
     cpf?: string,
@@ -217,23 +288,34 @@ export class ElegibilidadeService {
     if (cpf != null && cpf != '') {
       const request = new ConsultaSimRequest(cpf, 1);
       const car = await this.encontrarCAR(request);
-      await this.inserePropriedadeConsulta(car.simcarDados, propriedadeConsultas);
+      await this.inserePropriedadeConsulta(
+        car.simcarDados,
+        propriedadeConsultas,
+      );
     }
     if (cnpj != null && cnpj != '') {
       const request = new ConsultaSimRequest(cnpj, 2);
       const car = await this.encontrarCAR(request);
-      await this.inserePropriedadeConsulta(car.simcarDados, propriedadeConsultas);
+      await this.inserePropriedadeConsulta(
+        car.simcarDados,
+        propriedadeConsultas,
+      );
     }
     if (carEstadual != null && carEstadual != '') {
       carEstadual = carEstadual.trim();
-      const propriedadeConsulta = await this.propriedadeConsultaRepository.findOne({
-        where: { carEstadual },
-        relations: ['cidade'],
-      });
+      const propriedadeConsulta =
+        await this.propriedadeConsultaRepository.findOne({
+          where: { carEstadual },
+          relations: ['cidade'],
+        });
 
       if (propriedadeConsulta) {
-        propriedadeConsulta.proprietariosConsulta = JSON.parse(propriedadeConsulta.proprietarios)
-        propriedadeConsultas.push(plainToInstance(PropriedadeConsulta, propriedadeConsulta));
+        propriedadeConsulta.proprietariosConsulta = JSON.parse(
+          propriedadeConsulta.proprietarios,
+        );
+        propriedadeConsultas.push(
+          plainToInstance(PropriedadeConsulta, propriedadeConsulta),
+        );
       }
     }
 
@@ -254,11 +336,15 @@ export class ElegibilidadeService {
     }
   }
 
-  async inserePropriedadeConsulta(cardDados: Simcard[], PropriedadeConsultas: PropriedadeConsulta[]) {
+  async inserePropriedadeConsulta(
+    cardDados: Simcard[],
+    PropriedadeConsultas: PropriedadeConsulta[],
+  ) {
     for (const c of cardDados) {
-      const PropriedadeConsulta = await this.propriedadeConsultaRepository.findOneBy({
-        carEstadual: c.car,
-      });
+      const PropriedadeConsulta =
+        await this.propriedadeConsultaRepository.findOneBy({
+          carEstadual: c.car,
+        });
       if (PropriedadeConsulta) {
         PropriedadeConsultas.push(PropriedadeConsulta);
       }
@@ -277,7 +363,10 @@ export class ElegibilidadeService {
     return data;
   }
 
-  private async enviarEmailDeConfirmacaoDeSolicitacao(solicitacaoEligibilidade: SolicitacaoElegibilidade, propriedadeConsulta: PropriedadeConsulta): Promise<void> {
+  private async enviarEmailDeConfirmacaoDeSolicitacao(
+    solicitacaoEligibilidade: SolicitacaoElegibilidade,
+    propriedadeConsulta: PropriedadeConsulta,
+  ): Promise<void> {
     try {
       await this.emailService.enviarEmailTemplate({
         recipients: [solicitacaoEligibilidade.email],
@@ -292,7 +381,6 @@ export class ElegibilidadeService {
     } catch (error) {
       throw new NegocioException(error.code, error.message);
     }
-
   }
 
   async buscarElegidibilidadePorEmail(email: string) {
@@ -302,48 +390,75 @@ export class ElegibilidadeService {
     });
   }
 
-
   async buscaSolicitacao(id: number) {
     return this.solicitacaoElegibilidadeRepository.findOneBy({ id });
   }
 
-
   async atualizaSolicitacao(solicitacao: SolicitacaoElegibilidade) {
-    return this.solicitacaoElegibilidadeRepository.update(solicitacao.id, solicitacao);
+    return this.solicitacaoElegibilidadeRepository.update(
+      solicitacao.id,
+      solicitacao,
+    );
   }
 
-  async atualizaSolicitacaoRetornoElegibilidade(solicitacao: SolicitacaoElegibilidade) {
+  async atualizaSolicitacaoRetornoElegibilidade(
+    solicitacao: SolicitacaoElegibilidade,
+  ) {
     await this.enviarEmailDeElegibilidade(solicitacao);
     await this.solicitacaoElegibilidadeRepository.save(solicitacao);
   }
 
-  async atualizaSolicitacaoRetornoElegibilidadeFrigorifico(solicitacao: SolicitacaoElegibilidade) {
+  async atualizaSolicitacaoRetornoElegibilidadeFrigorifico(
+    solicitacao: SolicitacaoElegibilidade,
+  ) {
     await this.solicitacaoElegibilidadeRepository.save(solicitacao);
   }
 
-  async atualizaSolicitacaoRetornoElegibilidadeErro(solicitacao: SolicitacaoElegibilidade) {
-    await this.solicitacaoElegibilidadeRepository.update(solicitacao.id, solicitacao);
+  async atualizaSolicitacaoRetornoElegibilidadeErro(
+    solicitacao: SolicitacaoElegibilidade,
+  ) {
+    await this.solicitacaoElegibilidadeRepository.update(
+      solicitacao.id,
+      solicitacao,
+    );
   }
 
   async consultaSolicitacaoElegibilidade(filtro: ConsultaSolicitacaoQueryDto) {
-    const query = this.solicitacaoElegibilidadeRepository.createQueryBuilder('s');
+    const query =
+      this.solicitacaoElegibilidadeRepository.createQueryBuilder('s');
 
-    if (filtro.nomePropriedade == null && filtro.codigoMunicipio == null && filtro.carFederal == null) {
-      throw new BadRequestException("Nenhum parametro informado.");
+    if (
+      filtro.nomePropriedade == null &&
+      filtro.codigoMunicipio == null &&
+      filtro.carFederal == null
+    ) {
+      throw new BadRequestException('Nenhum parametro informado.');
     }
 
     query.leftJoinAndSelect('s.retornoAgrotools', 'retornoAgrotools');
     query.leftJoinAndSelect('s.cidade', 'cidade');
     query.where('s.confirmacaoEmail = :confEmail', { confEmail: 'SIM' });
-    if (filtro.nomePropriedade !== null && filtro.nomePropriedade !== undefined) {
-      query.andWhere('LOWER(s.nomePropriedade) LIKE :nomePropriedade', { nomePropriedade: `%${filtro.nomePropriedade?.toLowerCase()}%` });
+    if (
+      filtro.nomePropriedade !== null &&
+      filtro.nomePropriedade !== undefined
+    ) {
+      query.andWhere('LOWER(s.nomePropriedade) LIKE :nomePropriedade', {
+        nomePropriedade: `%${filtro.nomePropriedade?.toLowerCase()}%`,
+      });
     }
 
     if (filtro.carFederal !== null && filtro.carFederal !== undefined) {
-      query.andWhere('s.carFederal = :carFederal', { carFederal: filtro.carFederal?.replace(/[.]/g, '') });
+      query.andWhere('s.carFederal = :carFederal', {
+        carFederal: filtro.carFederal?.replace(/[.]/g, ''),
+      });
     }
-    if (filtro.codigoMunicipio !== null && filtro.codigoMunicipio !== undefined) {
-      query.andWhere('s.codigoMunicipio = :codigoMunicipio', { codigoMunicipio: filtro.codigoMunicipio });
+    if (
+      filtro.codigoMunicipio !== null &&
+      filtro.codigoMunicipio !== undefined
+    ) {
+      query.andWhere('s.codigoMunicipio = :codigoMunicipio', {
+        codigoMunicipio: filtro.codigoMunicipio,
+      });
     }
 
     return query.getMany();
@@ -360,7 +475,9 @@ export class ElegibilidadeService {
     return await this.agrotoolsService.confirmarSolicitacao(id, token);
   }
 
-  private async enviarEmailDeElegibilidade(solicitacaoEligibilidade: SolicitacaoElegibilidade): Promise<void> {
+  private async enviarEmailDeElegibilidade(
+    solicitacaoEligibilidade: SolicitacaoElegibilidade,
+  ): Promise<void> {
     try {
       await this.emailService.enviarEmailTemplate({
         recipients: [solicitacaoEligibilidade.email],
@@ -370,9 +487,13 @@ export class ElegibilidadeService {
           carEstadual: solicitacaoEligibilidade.carEstadual,
           deteccoes: solicitacaoEligibilidade.retornoAgrotools.deteccoes,
           propriedadeApta: solicitacaoEligibilidade.retornoAgrotools.isEligible,
-          areaDesmatamentoTotal: solicitacaoEligibilidade.retornoAgrotools.areas_desmatamento_total.toString(),
-          numeroModulosFiscais: solicitacaoEligibilidade.retornoAgrotools.modulo_fiscal.toString(),
-          valorMulta: solicitacaoEligibilidade.retornoAgrotools.vlr_multa ? solicitacaoEligibilidade.retornoAgrotools.vlr_multa.toString() : '00',
+          areaDesmatamentoTotal:
+            solicitacaoEligibilidade.retornoAgrotools.areas_desmatamento_total.toString(),
+          numeroModulosFiscais:
+            solicitacaoEligibilidade.retornoAgrotools.modulo_fiscal.toString(),
+          valorMulta: solicitacaoEligibilidade.retornoAgrotools.vlr_multa
+            ? solicitacaoEligibilidade.retornoAgrotools.vlr_multa.toString()
+            : '00',
         }),
       });
     } catch (error) {
@@ -381,23 +502,30 @@ export class ElegibilidadeService {
   }
 
   async consultaSolicitacaoValidada(carFederal: string) {
-    return await this.solicitacaoElegibilidadeRepository.createQueryBuilder('solicitacaoElegibilidade')
-      .innerJoinAndSelect("solicitacaoElegibilidade.retornoAgrotools", "retornoAgrotools")
-      .innerJoinAndSelect("retornoAgrotools.deteccoes", "deteccoes")
-      .where('solicitacaoElegibilidade.carFederal = :carFederal', { carFederal: carFederal })
+    return await this.solicitacaoElegibilidadeRepository
+      .createQueryBuilder('solicitacaoElegibilidade')
+      .innerJoinAndSelect(
+        'solicitacaoElegibilidade.retornoAgrotools',
+        'retornoAgrotools',
+      )
+      .innerJoinAndSelect('retornoAgrotools.deteccoes', 'deteccoes')
+      .where('solicitacaoElegibilidade.carFederal = :carFederal', {
+        carFederal: carFederal,
+      })
       .getOne();
   }
 
-
   async graficoAcompanhamentoGeral(dataInicio?: string, dataFim?: string) {
     const infoPorDias = await this.solicitacaoElegibilidadeRepository.query(
-      `SELECT * FROM "IMAC"."FN_GRAFICO_ACOMPANHAMENTO_GERAL"($1, $2)`,
-      [dataInicio ?? null, dataFim ?? null]
+      `SELECT *
+       FROM "IMAC"."FN_GRAFICO_ACOMPANHAMENTO_GERAL"($1, $2)`,
+      [dataInicio ?? null, dataFim ?? null],
     );
 
     const porIndicadores = await this.solicitacaoElegibilidadeRepository.query(
-      `SELECT * FROM "IMAC"."FN_RESUMO_ELEGIBILIDADE"($1, $2)`,
-      [dataInicio ?? null, dataFim ?? null]
+      `SELECT *
+       FROM "IMAC"."FN_RESUMO_ELEGIBILIDADE"($1, $2)`,
+      [dataInicio ?? null, dataFim ?? null],
     );
 
     return {
@@ -406,13 +534,13 @@ export class ElegibilidadeService {
     };
   }
 
-  async enviarConfirmacaoPagamento(email: string, car: string){
+  async enviarConfirmacaoPagamento(email: string, car: string) {
     try {
       await this.emailService.enviarEmailTemplate({
         recipients: [email],
         subject: 'Confirmação de Pagamento',
         template: new PagamentoAprovadoTemplate({
-          car: email
+          car: email,
         }),
       });
     } catch (error) {
@@ -420,13 +548,13 @@ export class ElegibilidadeService {
     }
   }
 
-  async enviarEmailPagamentoRecusado(email: string, car: string){
+  async enviarEmailPagamentoRecusado(email: string, car: string) {
     try {
       await this.emailService.enviarEmailTemplate({
         recipients: [email],
         subject: 'Confirmação de Pagamento',
         template: new PagamentoRecusadoTemplate({
-          car: email
+          car: email,
         }),
       });
     } catch (error) {
@@ -434,8 +562,11 @@ export class ElegibilidadeService {
     }
   }
 
-  async  salvarElegibilidade(solicitacaoElegibilidade: SolicitacaoElegibilidade){
-    return this.solicitacaoElegibilidadeRepository.save(solicitacaoElegibilidade);
+  async salvarElegibilidade(
+    solicitacaoElegibilidade: SolicitacaoElegibilidade,
+  ) {
+    return this.solicitacaoElegibilidadeRepository.save(
+      solicitacaoElegibilidade,
+    );
   }
-
 }

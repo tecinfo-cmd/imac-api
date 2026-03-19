@@ -27,99 +27,171 @@ interface DadosAutoVistoria<T> {
   telefone: string | undefined;
 }
 
-
 @Injectable()
 export class MensagemService {
-
   headersRequest = {
-    'Authorization': `${process.env.KEY_WHATSAPP as string}`,
+    Authorization: `${process.env.KEY_WHATSAPP as string}`,
     'Content-Type': 'application/json',
   };
 
-  url:string;
+  url: string;
   key: string;
-  flowId:string;
-  masterstate:string;
-  stateIdPrem:string;
-  stateIdPassaport:string;
-  email:string;
-  body: BodyRequest =  new BodyRequest();
-
+  flowId: string;
+  masterstate: string;
+  stateIdPrem: string;
+  stateIdPassaport: string;
+  email: string;
+  body: BodyRequest = new BodyRequest();
 
   constructor() {
-    this.url = process.env.URL_WHATSAPP as string
-    this.key= process.env.KEY_WHATSAPP as string
-    this.flowId= process.env.FLOW_ID as string
-    this.masterstate= process.env.MASTER_STATE as string
-    this.stateIdPrem = process.env.STATE_ID_PASSAPORT as string
-    this.stateIdPassaport= process.env.STATE_ID_PREM as string
-
+    this.url = process.env.URL_WHATSAPP as string;
+    this.key = process.env.KEY_WHATSAPP as string;
+    this.flowId = process.env.FLOW_ID as string;
+    this.masterstate = process.env.MASTER_STATE as string;
+    this.stateIdPrem = process.env.STATE_ID_PASSAPORT as string;
+    this.stateIdPassaport = process.env.STATE_ID_PREM as string;
   }
 
-  async enviarMensagenStatus<T>({produtor, propriedade, carFederal, etapa, telefone }: DadosAnalise<T> ): Promise<void>{
+  async enviarMensagenStatus<T>({
+    produtor,
+    propriedade,
+    carFederal,
+    etapa,
+    telefone,
+  }: DadosAnalise<T>): Promise<void> {
     const code = await this.gerarStringAleatoria();
 
-    const campaign = {name: code, campaignType: "individual",
-      flowId: this.flowId, stateId: this.stateIdPrem, masterstate: this.masterstate, channelType: "WhatsApp"} as CampaignRequest;
-    const audience  = {recipient:`+55${telefone}`, messageParams: {"1": produtor, "2": propriedade, "3": carFederal, "4" : etapa}}
-    const message =  {messageTemplate: "ciclo_analise", messageParams: ["1","2","3","4"], channelType: "WhatsApp"} as MessageRequest;
+    const campaign = {
+      name: code,
+      campaignType: 'individual',
+      flowId: this.flowId,
+      stateId: this.stateIdPrem,
+      masterstate: this.masterstate,
+      channelType: 'WhatsApp',
+    } as CampaignRequest;
+    const audience = {
+      recipient: `+55${telefone}`,
+      messageParams: {
+        '1': produtor,
+        '2': propriedade,
+        '3': carFederal,
+        '4': etapa,
+      },
+    };
+    const message = {
+      messageTemplate: 'ciclo_analise',
+      messageParams: ['1', '2', '3', '4'],
+      channelType: 'WhatsApp',
+    } as MessageRequest;
 
-    this.body.resource = {campaign: campaign, audience: audience, message: message};
+    this.body.resource = {
+      campaign: campaign,
+      audience: audience,
+      message: message,
+    };
 
-    return await axios.post(`${this.url}`, this.body, { headers: this.headersRequest })
+    return await axios
+      .post(`${this.url}`, this.body, { headers: this.headersRequest })
       .then((res) => {
         return res.data;
-      }).catch((error) => {
+      })
+      .catch((error) => {
         throw new NegocioException(error.status, error);
       });
-
   }
 
-  async enviarMensagemAutoVistoria<T>({produtor, propriedade, carFederal, telefone }: DadosAutoVistoria<T> ): Promise<void>{
+  async enviarMensagemAutoVistoria<T>({
+    produtor,
+    propriedade,
+    carFederal,
+    telefone,
+  }: DadosAutoVistoria<T>): Promise<void> {
     const code = await this.gerarStringAleatoria();
 
-    const campaign = {name: code, campaignType: "individual",
-      flowId: this.flowId, stateId: this.stateIdPrem, masterstate: this.masterstate, channelType: "WhatsApp"} as CampaignRequest;
-    const audience  = {recipient:`+55${telefone}`, messageParams: {"1": produtor, "2": propriedade, "3": carFederal}}
-    const message =  {messageTemplate: "auto_vistoria", messageParams: ["1","2","3"], channelType: "WhatsApp"} as MessageRequest;
+    const campaign = {
+      name: code,
+      campaignType: 'individual',
+      flowId: this.flowId,
+      stateId: this.stateIdPrem,
+      masterstate: this.masterstate,
+      channelType: 'WhatsApp',
+    } as CampaignRequest;
+    const audience = {
+      recipient: `+55${telefone}`,
+      messageParams: { '1': produtor, '2': propriedade, '3': carFederal },
+    };
+    const message = {
+      messageTemplate: 'auto_vistoria',
+      messageParams: ['1', '2', '3'],
+      channelType: 'WhatsApp',
+    } as MessageRequest;
 
-    this.body.resource = {campaign: campaign, audience: audience, message: message};
+    this.body.resource = {
+      campaign: campaign,
+      audience: audience,
+      message: message,
+    };
 
-    return await axios.post(`${this.url}`, this.body, { headers: this.headersRequest })
+    return await axios
+      .post(`${this.url}`, this.body, { headers: this.headersRequest })
       .then((res) => {
         return res.data;
-      }).catch((error) => {
+      })
+      .catch((error) => {
         throw new NegocioException(error.status, error);
       });
-
   }
 
-  async enviarMensagen<T>({ telefone, nome, mensagem }: DadosEnvio<T> ): Promise<void>{
+  async enviarMensagen<T>({
+    telefone,
+    nome,
+    mensagem,
+  }: DadosEnvio<T>): Promise<void> {
     const code = await this.gerarStringAleatoria();
 
-    const campaign = {name: code, campaignType: "individual",
-      flowId: this.flowId, stateId: this.stateIdPrem, masterstate: this.masterstate, channelType: "WhatsApp"} as CampaignRequest;
-      const audience  = {recipient:`+55${telefone}`, messageParams: {"1": nome}}
-      const message =  {messageTemplate: "boas_vindas", messageParams: ["1"], channelType: "WhatsApp"} as MessageRequest;
+    const campaign = {
+      name: code,
+      campaignType: 'individual',
+      flowId: this.flowId,
+      stateId: this.stateIdPrem,
+      masterstate: this.masterstate,
+      channelType: 'WhatsApp',
+    } as CampaignRequest;
+    const audience = {
+      recipient: `+55${telefone}`,
+      messageParams: { '1': nome },
+    };
+    const message = {
+      messageTemplate: 'boas_vindas',
+      messageParams: ['1'],
+      channelType: 'WhatsApp',
+    } as MessageRequest;
 
-    this.body.resource = {campaign: campaign, audience: audience, message: message};
+    this.body.resource = {
+      campaign: campaign,
+      audience: audience,
+      message: message,
+    };
 
-    return await axios.post(`${this.url}`, this.body, { headers: this.headersRequest })
+    return await axios
+      .post(`${this.url}`, this.body, { headers: this.headersRequest })
       .then((res) => {
         return res.data;
-      }).catch((error) => {
+      })
+      .catch((error) => {
         throw new NegocioException(error.status, error);
       });
-
   }
 
   async gerarStringAleatoria() {
     let resultado = '';
-    const caracteres = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+    const caracteres =
+      'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
     for (let i = 0; i < 45; i++) {
-      resultado += caracteres.charAt(Math.floor(Math.random() * caracteres.length));
+      resultado += caracteres.charAt(
+        Math.floor(Math.random() * caracteres.length),
+      );
     }
     return resultado;
   }
-
 }
