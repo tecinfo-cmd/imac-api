@@ -5,15 +5,14 @@ import { CobrancasService } from '../../cobranca/cobranca.service';
 import * as process from 'process';
 
 @Injectable()
-export class JobElegibilidadeService{
+export class JobElegibilidadeService {
+  private readonly ambiente = process.env.AMBIENTE as string;
 
-  private readonly ambiente = process.env.AMBIENTE as string
-
-
-  constructor(private readonly agroToolsService: AgrotoolsService,
-              @Inject(forwardRef(() => CobrancasService))
-              private readonly cobrancaService:CobrancasService) {
-  }
+  constructor(
+    private readonly agroToolsService: AgrotoolsService,
+    @Inject(forwardRef(() => CobrancasService))
+    private readonly cobrancaService: CobrancasService,
+  ) {}
   //VERIFICA TRANSAÇÃO CONSULTA ELEGIBILIDADE
   @Cron(CronExpression.EVERY_MINUTE)
   verificaConsultaTransacao() {
@@ -21,12 +20,12 @@ export class JobElegibilidadeService{
   }
 
   //VERIFICA TRANSAÇÃO CONSULTA FRIGORIFICO
-  @Cron("0 */2 * * * *")
+  @Cron('0 */2 * * * *')
   verificaConsultaTransacaFrigorifico() {
     this.agroToolsService.consultaTransacaoFrigorico();
   }
 
-  @Cron("0 */3 * * * *")
+  @Cron('0 */3 * * * *')
   verificaFormulario() {
     this.agroToolsService.consultaFormularioAutoVistoria();
   }
@@ -36,22 +35,22 @@ export class JobElegibilidadeService{
   //   this.agroToolsService.atualizaImagem();
   // }
 
-  @Cron("0 */1 * * * *")
+  @Cron('0 */1 * * * *')
   cadastrarPessoaAgrotools() {
     this.agroToolsService.cadastraPessoaAgrotools();
   }
 
-  @Cron("0 */3 * * * *")
+  @Cron('0 */3 * * * *')
   verificaAnalise() {
     this.agroToolsService.verificaAnalise();
   }
 
-  @Cron("0 */3 * * * *")
+  @Cron('0 */3 * * * *')
   verificaContestacoesAnalise() {
     this.agroToolsService.verificaContestacoesAnalise();
   }
 
-  @Cron("0 */3 * * * *")
+  @Cron('0 */3 * * * *')
   verificaPlanosAdequacao() {
     this.agroToolsService.verificaPlanosAdequacao();
   }
@@ -66,26 +65,24 @@ export class JobElegibilidadeService{
     this.cobrancaService.verificarBoletosLiquidadosMulta();
   }
 
-  @Cron("0 */9 * * * *")
+  @Cron('0 */9 * * * *')
   cadastrarTerritorio() {
     this.agroToolsService.cadastrarTerritorio();
   }
 
   //CONFIRMAÇÃO PAGAMENTOS MULTA E VOUCHER MOCK
-  @Cron("0 */10 * * * *")
+  @Cron('0 */10 * * * *')
   validaPagamentoVoucherMock() {
-    if(this.ambiente == 'development'){
+    if (this.ambiente == 'development') {
       this.cobrancaService.verificaConfirmacaoPagamentoVoucherMock();
     }
   }
 
   //CONFIRMAÇÃO PAGAMENTOS MULTA E VOUCHER MOCK
-  @Cron("0 */4 * * * *")
+  @Cron('0 */4 * * * *')
   validaPagamentoMultasMock() {
-    if(this.ambiente == 'development'){
+    if (this.ambiente == 'development') {
       this.cobrancaService.verificaConfirmacaoPagamentoMultaMock();
     }
   }
-
-
 }

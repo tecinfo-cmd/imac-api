@@ -1,4 +1,10 @@
-import { BadRequestException, forwardRef, Inject, Injectable, Logger } from '@nestjs/common';
+import {
+  BadRequestException,
+  forwardRef,
+  Inject,
+  Injectable,
+  Logger,
+} from '@nestjs/common';
 import { HttpService } from '@nestjs/axios';
 import * as process from 'process';
 import { catchError, firstValueFrom } from 'rxjs';
@@ -38,7 +44,10 @@ import { SolicitacaoAnaliseResponse } from './response/solicitacao-analise-respo
 import { RetornoAnaliseEntity } from './entities/retorno-analise.entity';
 import { DeteccoesAgrotools } from '../elegibilidade/entities/deteccoes-agrotools.entity';
 import { DeteccoesAnaliseEntity } from './entities/deteccoes-analise.entity';
-import { Etapas, StatusEtapas } from '../propriedade-prem/enum/etapas-status-propriedade.const';
+import {
+  Etapas,
+  StatusEtapas,
+} from '../propriedade-prem/enum/etapas-status-propriedade.const';
 import { VistoriaAgrotools } from './request/vistoria-agrotools';
 import { AutoVistoriaService } from '../propriedade-prem/auto-vistoria/auto-vistoria.service';
 import { createHash, randomUUID } from 'crypto';
@@ -93,15 +102,20 @@ export class AgrotoolsService {
     this.url = process.env.URL_AGROTOOLS as string;
   }
 
-
   /**
    * Integração agrotools solicicitação de elegibilidade
    * @param elegibilidadeRequest
    */
-  async consultarElegibilidade(car: string): Promise<EligibilidadeAsyncAgrotoolsResponse> {
+  async consultarElegibilidade(
+    car: string,
+  ): Promise<EligibilidadeAsyncAgrotoolsResponse> {
     try {
       const { data } = await firstValueFrom(
-        this.httpService.post<EligibilidadeAsyncAgrotoolsResponse>(`${this.url}/Eligibility/async`, car, { headers: this.headersRequest }),
+        this.httpService.post<EligibilidadeAsyncAgrotoolsResponse>(
+          `${this.url}/Eligibility/async`,
+          car,
+          { headers: this.headersRequest },
+        ),
       );
 
       return data;
@@ -114,13 +128,24 @@ export class AgrotoolsService {
    * Integração agrotools solicicitação de elegibilidade Assincrono
    * @param elegibilidadeRequest
    */
-  async solicitaElegebilidade(elegibilidadeRequest: ElegibilidadeRequest): Promise<RetornoElebilidadeAsincResponse> {
+  async solicitaElegebilidade(
+    elegibilidadeRequest: ElegibilidadeRequest,
+  ): Promise<RetornoElebilidadeAsincResponse> {
     const { data } = await firstValueFrom(
-      this.httpService.post<RetornoElebilidadeAsincResponse>(`${this.url}/Eligibility/async`, elegibilidadeRequest, { headers: this.headersRequest }).pipe(
-        catchError((error: any) => {
-          throw new NegocioException(error.status, this.getErroAgrotools(error));
-        }),
-      ),
+      this.httpService
+        .post<RetornoElebilidadeAsincResponse>(
+          `${this.url}/Eligibility/async`,
+          elegibilidadeRequest,
+          { headers: this.headersRequest },
+        )
+        .pipe(
+          catchError((error: any) => {
+            throw new NegocioException(
+              error.status,
+              this.getErroAgrotools(error),
+            );
+          }),
+        ),
     );
     return data;
   }
@@ -129,27 +154,42 @@ export class AgrotoolsService {
    * Consulta resultado elegibilidade
    * @param idTransacao
    */
-  async verificaRetornoTransacao(idTransacao: string): Promise<RetornoElegibilidadeResponse> {
+  async verificaRetornoTransacao(
+    idTransacao: string,
+  ): Promise<RetornoElegibilidadeResponse> {
     const { data } = await firstValueFrom(
-      this.httpService.get<RetornoElegibilidadeResponse>(`${this.url}/Eligibility/${idTransacao}`, { headers: this.headersRequest }).pipe(
-        catchError((error: any) => {
-          throw new NegocioException(error.status, this.getErroAgrotools(error));
-        }),
-      ),
+      this.httpService
+        .get<RetornoElegibilidadeResponse>(
+          `${this.url}/Eligibility/${idTransacao}`,
+          { headers: this.headersRequest },
+        )
+        .pipe(
+          catchError((error: any) => {
+            throw new NegocioException(
+              error.status,
+              this.getErroAgrotools(error),
+            );
+          }),
+        ),
     );
     return data;
   }
-
 
   /**
    *  Cadastrar Pessoa Agrotools
    * @param produtorAgrotools
    */
-  async cadastrarProdutor(produtorAgrotools: ProdutorAgrotools): Promise<ProdutorAgrotoolsResponse> {
-    return await axios.post(`${this.url}/Person`, produtorAgrotools, { headers: this.headersRequest })
+  async cadastrarProdutor(
+    produtorAgrotools: ProdutorAgrotools,
+  ): Promise<ProdutorAgrotoolsResponse> {
+    return await axios
+      .post(`${this.url}/Person`, produtorAgrotools, {
+        headers: this.headersRequest,
+      })
       .then((res) => {
         return res.data;
-      }).catch((error) => {
+      })
+      .catch((error) => {
         throw new NegocioException(error.status, this.getErroAgrotools(error));
       });
   }
@@ -161,24 +201,33 @@ export class AgrotoolsService {
   async consultarTerritorio(id: number): Promise<TerritorioResponse> {
     const codigo = id.toString();
 
-    return await axios.get(`${this.url}/Territory/get-by-ownercode/${codigo}`, { headers: this.headersRequest })
+    return await axios
+      .get(`${this.url}/Territory/get-by-ownercode/${codigo}`, {
+        headers: this.headersRequest,
+      })
       .then((res) => {
         return res.data;
-      }).catch((error) => {
+      })
+      .catch((error) => {
         return null;
       });
-
   }
 
   /**
    *
    * @param produtorAgrotools
    */
-  async cadastrarProdutorJob(produtorAgrotools: ProdutorAgrotools): Promise<ProdutorAgrotoolsResponse> {
-    return await axios.post(`${this.url}/Person`, produtorAgrotools, { headers: this.headersRequest })
+  async cadastrarProdutorJob(
+    produtorAgrotools: ProdutorAgrotools,
+  ): Promise<ProdutorAgrotoolsResponse> {
+    return await axios
+      .post(`${this.url}/Person`, produtorAgrotools, {
+        headers: this.headersRequest,
+      })
       .then((res) => {
         return res.data;
-      }).catch((error) => {
+      })
+      .catch((error) => {
         throw new NegocioException(error.status, this.getErroAgrotools(error));
       });
   }
@@ -187,11 +236,17 @@ export class AgrotoolsService {
    * Consulta Pessoa com base no email
    * @param email
    */
-  async consultarUsuarioCadastrado(email: string): Promise<ProdutorAgrotoolsResponse> {
-    return await axios.get(`${this.url}/Person/email/${email}`, { headers: this.headersRequest })
+  async consultarUsuarioCadastrado(
+    email: string,
+  ): Promise<ProdutorAgrotoolsResponse> {
+    return await axios
+      .get(`${this.url}/Person/email/${email}`, {
+        headers: this.headersRequest,
+      })
       .then((res) => {
         return res.data;
-      }).catch((error) => {
+      })
+      .catch((error) => {
         return null;
       });
   }
@@ -200,11 +255,17 @@ export class AgrotoolsService {
    * Cadastra um produtor
    * @param produtorAgrotools
    */
-  async cadastrarProdutorTemp(produtorAgrotools: ProdutorAgrotools): Promise<ProdutorAgrotoolsResponse> {
-    return await axios.post(`${this.url}/Person`, produtorAgrotools, { headers: this.headersRequest })
+  async cadastrarProdutorTemp(
+    produtorAgrotools: ProdutorAgrotools,
+  ): Promise<ProdutorAgrotoolsResponse> {
+    return await axios
+      .post(`${this.url}/Person`, produtorAgrotools, {
+        headers: this.headersRequest,
+      })
       .then((res) => {
         return res.data;
-      }).catch((error) => {
+      })
+      .catch((error) => {
         console.log(this.getErroAgrotools(error));
       });
   }
@@ -213,10 +274,16 @@ export class AgrotoolsService {
    * Validar voucher
    * @param validarVoucher
    */
-  async validaVoucher(validarVoucher: ValidarVoucher): Promise<ValidarVoucherResponse> {
-
-    const validacao = { voucherAlreadyApplied: true, cdTerritory: randomUUID() };
-    const propriedade = await this.propriedadeService.consultaPropriedadePorId(validarVoucher.idPropriedade);
+  async validaVoucher(
+    validarVoucher: ValidarVoucher,
+  ): Promise<ValidarVoucherResponse> {
+    const validacao = {
+      voucherAlreadyApplied: true,
+      cdTerritory: randomUUID(),
+    };
+    const propriedade = await this.propriedadeService.consultaPropriedadePorId(
+      validarVoucher.idPropriedade,
+    );
     if (propriedade) {
       propriedade.voucher = validarVoucher.voucher;
       propriedade.statusVoucher = true;
@@ -233,10 +300,12 @@ export class AgrotoolsService {
    * @param produtorAgrotools
    */
   async consultarProtocolos(): Promise<ProtocoloResponse> {
-    return await axios.get(`${this.url}/Analysis`, { headers: this.headersRequest })
+    return await axios
+      .get(`${this.url}/Analysis`, { headers: this.headersRequest })
       .then((res) => {
         return res.data;
-      }).catch((error) => {
+      })
+      .catch((error) => {
         console.log(this.getErroAgrotools(error));
       });
   }
@@ -245,11 +314,17 @@ export class AgrotoolsService {
    *  Solicitar Analise socioAmbiental
    * @param produtorAgrotools
    */
-  async solicitarAnaliseSocioAmb(request: AnaliseRequest): Promise<SolicitacaoAnaliseResponse> {
-    return await axios.post(`${this.url}/Analysis/pdf`, request, { headers: this.headersRequest })
+  async solicitarAnaliseSocioAmb(
+    request: AnaliseRequest,
+  ): Promise<SolicitacaoAnaliseResponse> {
+    return await axios
+      .post(`${this.url}/Analysis/pdf`, request, {
+        headers: this.headersRequest,
+      })
       .then((res) => {
         return res.data;
-      }).catch((error) => {
+      })
+      .catch((error) => {
         //console.log(this.getErroAgrotools(error));
         throw new NegocioException(422, this.getErroAgrotools(error));
       });
@@ -259,21 +334,30 @@ export class AgrotoolsService {
    * Solicita auto Vistoria
    * @param vistoriaRequest
    */
-  async solicitarVistoria(vistoriaRequest: VistoriaAgrotools): Promise<AutoVistoriaRespnse> {
-    return await axios.post(`${this.url}/Survey`, vistoriaRequest, { headers: this.headersRequest })
+  async solicitarVistoria(
+    vistoriaRequest: VistoriaAgrotools,
+  ): Promise<AutoVistoriaRespnse> {
+    return await axios
+      .post(`${this.url}/Survey`, vistoriaRequest, {
+        headers: this.headersRequest,
+      })
       .then((res) => {
         return res.data;
-      }).catch((error) => {
+      })
+      .catch((error) => {
         throw new NegocioException(422, this.getErroAgrotools(error));
       });
-  };
+  }
 
   /**
    *
    * @param cdTerritory
    * @param idAnalise
    */
-  async salvaPlanoAdequacao(cdTerritory: string, idAnalise: number): Promise<RetornoPlanoAdequacao> {
+  async salvaPlanoAdequacao(
+    cdTerritory: string,
+    idAnalise: number,
+  ): Promise<RetornoPlanoAdequacao> {
     const retornoAgrotools = await this.consultaAnalise(idAnalise);
     const planoAdequacao = await this.consultaPlanoPorIdAnalise(idAnalise);
 
@@ -286,25 +370,36 @@ export class AgrotoolsService {
     }
 
     const request: PlanoAdequacaoRequest = {
-      cdTerritory: cdTerritory, adequancyPlanItems: retornoAgrotools?.deteccoes.map(d => ({
-        idTad: d.idAgrotools,
-        wkt: planoAdequacao.wkt,
-        technicalReportUrl: retornoAgrotools?.urlRelatorio,
-      }) as ItensPlanoAdequacao),
+      cdTerritory: cdTerritory,
+      adequancyPlanItems: retornoAgrotools?.deteccoes.map(
+        (d) =>
+          ({
+            idTad: d.idAgrotools,
+            wkt: planoAdequacao.wkt,
+            technicalReportUrl: retornoAgrotools?.urlRelatorio,
+          }) as ItensPlanoAdequacao,
+      ),
     };
 
-    const data: RetornoPlanoAdequacao = await axios.post(`${this.url}/AdequancyPlan`, request, { headers: this.headersRequest })
+    const data: RetornoPlanoAdequacao = await axios
+      .post(`${this.url}/AdequancyPlan`, request, {
+        headers: this.headersRequest,
+      })
       .then((res) => {
         return res.data;
-      }).catch((error) => {
+      })
+      .catch((error) => {
         throw new NegocioException(error.status, this.getErroAgrotools(error));
       });
 
     planoAdequacao.adequacaoId = data.adequancyPlanId;
     await this.atualizaIdContestacao(planoAdequacao);
-    await this.territorioRepository.update({ codigoTerritorio: cdTerritory }, { statusImagem: "ATUALIZAR" });
+    await this.territorioRepository.update(
+      { codigoTerritorio: cdTerritory },
+      { statusImagem: 'ATUALIZAR' },
+    );
     return data;
-  };
+  }
 
   /**
    *
@@ -321,14 +416,20 @@ export class AgrotoolsService {
       throw new NegocioException(404, 'Territor não encontrado');
     }
 
-    const data: ImagemPlano = await axios.post(`${this.url}/AdequancyPlan/generate-image/${codigoTerritory}`, { headers: this.headersRequest })
+    const data: ImagemPlano = await axios
+      .post(`${this.url}/AdequancyPlan/generate-image/${codigoTerritory}`, {
+        headers: this.headersRequest,
+      })
       .then((res) => {
         return res.data;
-      }).catch((error) => {
+      })
+      .catch((error) => {
         throw new NegocioException(error.status, error?.response.data.message);
       });
     if (data) {
-      const documento = await this.documentoUploadService.uploadBase64Image(data.base64Image);
+      const documento = await this.documentoUploadService.uploadBase64Image(
+        data.base64Image,
+      );
       territorio.imagemAdequacao = documento.url;
       await this.territorioRepository.update(territorio.id, territorio);
 
@@ -338,7 +439,10 @@ export class AgrotoolsService {
     return territorio;
   }
 
-  async retornaImagemPlanoJob(codigoTerritory: string, hashImagem?: string): Promise<TerritorioEntity | null> {
+  async retornaImagemPlanoJob(
+    codigoTerritory: string,
+    hashImagem?: string,
+  ): Promise<TerritorioEntity | null> {
     const territorio = await this.territorioRepository.findOne({
       where: {
         codigoTerritorio: codigoTerritory,
@@ -349,31 +453,38 @@ export class AgrotoolsService {
       throw new NegocioException(404, 'Territor não encontrado');
     }
 
-    const data: ImagemPlano = await axios.post(`${this.url}/AdequancyPlan/generate-image/${codigoTerritory}`, { headers: this.headersRequest })
+    const data: ImagemPlano = await axios
+      .post(`${this.url}/AdequancyPlan/generate-image/${codigoTerritory}`, {
+        headers: this.headersRequest,
+      })
       .then((res) => {
         return res.data;
-      }).catch((error) => {
+      })
+      .catch((error) => {
         console.log(this.getErroAgrotools(error));
       });
 
     if (data) {
-      const hashImagemAgrotools = createHash('sha256').update(data.base64Image).digest('hex');
+      const hashImagemAgrotools = createHash('sha256')
+        .update(data.base64Image)
+        .digest('hex');
 
       if (hashImagem === hashImagemAgrotools) {
         return null;
       }
 
-      const documento = await this.documentoUploadService.uploadBase64Image(data.base64Image);
+      const documento = await this.documentoUploadService.uploadBase64Image(
+        data.base64Image,
+      );
       territorio.hashImagem = hashImagemAgrotools;
       territorio.imagemAdequacao = documento.url;
-      territorio.statusImagem = "ATUALIZADA";
+      territorio.statusImagem = 'ATUALIZADA';
       await this.territorioRepository.update(territorio.id, territorio);
 
       return territorio;
     }
 
     return null;
-
   }
 
   //TODO: Da para juntar as funções elas se repetem na maior parte
@@ -388,24 +499,32 @@ export class AgrotoolsService {
       throw new NegocioException(404, 'Territor não encontrado');
     }
 
-    const data: ImagemTerritorio = await axios.post(`${this.url}/Image/generate-image/${codigoTerritory}`, '', { headers: this.headersRequest })
+    const data: ImagemTerritorio = await axios
+      .post(`${this.url}/Image/generate-image/${codigoTerritory}`, '', {
+        headers: this.headersRequest,
+      })
       .then((res) => {
         return res.data;
-      }).catch((error) => {
+      })
+      .catch((error) => {
         console.log(error.error);
       });
 
     if (data) {
-      const hashImagemAgrotools = createHash('sha256').update(data.base64Image).digest('hex');
+      const hashImagemAgrotools = createHash('sha256')
+        .update(data.base64Image)
+        .digest('hex');
 
       if (hashImagem === hashImagemAgrotools) {
         return null;
       }
 
-      const documento = await this.documentoUploadService.uploadBase64Image(data.base64Image);
+      const documento = await this.documentoUploadService.uploadBase64Image(
+        data.base64Image,
+      );
       territorio.hashImagem = hashImagemAgrotools;
       territorio.imagemAdequacao = documento.url;
-      territorio.statusImagem = "ATUALIZADA";
+      territorio.statusImagem = 'ATUALIZADA';
       await this.territorioRepository.update(territorio.id, territorio);
 
       return territorio;
@@ -414,23 +533,35 @@ export class AgrotoolsService {
     return null;
   }
 
-  async buscarDocumento(idAnalise: number, cdTerritory: string): Promise<RetornoAnaliseEntity> {
+  async buscarDocumento(
+    idAnalise: number,
+    cdTerritory: string,
+  ): Promise<RetornoAnaliseEntity> {
     const retornoAgrotools = await this.consultaAnalise(idAnalise);
 
     if (!retornoAgrotools) {
       throw new NegocioException(404, 'retorno Agrotools não encontrado');
     }
 
-    const data: DocumentoContestacao = await axios.get(`${this.url}/Contestation/${cdTerritory}`, { headers: this.headersRequest })
+    const data: DocumentoContestacao = await axios
+      .get(`${this.url}/Contestation/${cdTerritory}`, {
+        headers: this.headersRequest,
+      })
       .then((res) => {
         return res.data;
-      }).catch((error) => {
-        this.salvaErroRetornoAgrotools(retornoAgrotools, this.getErroAgrotools(error))
+      })
+      .catch((error) => {
+        this.salvaErroRetornoAgrotools(
+          retornoAgrotools,
+          this.getErroAgrotools(error),
+        );
         throw new NegocioException(error.status, this.getErroAgrotools(error));
       });
 
     for (const deteccoes of retornoAgrotools.deteccoes) {
-      const document = data.documents.find(d => d.idTad = deteccoes.idAgrotools);
+      const document = data.documents.find(
+        (d) => (d.idTad = deteccoes.idAgrotools),
+      );
       if (document) {
         deteccoes.urlContestacao = document.technicalReportUrl;
       }
@@ -438,14 +569,17 @@ export class AgrotoolsService {
 
     await this.retornoAnaliseRepository.save(retornoAgrotools);
     return retornoAgrotools;
-  };
+  }
 
   /**
    *
    * @param cdTerritory
    * @param idAnalise
    */
-  async salvaContestacao(cdTerritory: string, idAnalise: number): Promise<RetornoAdequacao> {
+  async salvaContestacao(
+    cdTerritory: string,
+    idAnalise: number,
+  ): Promise<RetornoAdequacao> {
     const retornoAgrotools = await this.consultaAnalise(idAnalise);
 
     if (!retornoAgrotools) {
@@ -460,44 +594,66 @@ export class AgrotoolsService {
 
     const request: ContestacaoRequest = {
       cdTerritory: cdTerritory,
-      contestation: retornoAgrotools?.deteccoes.map(d => ({
-        idTad: d.idAgrotools,
-        wkt: d.wkt,
-        technicalReportUrl: documentosAnalise[0].urlArquivo,
-        typeContestation: d.tipoDeteccao
-      }) as ItensPlanoAdequacao),
+      contestation: retornoAgrotools?.deteccoes.map(
+        (d) =>
+          ({
+            idTad: d.idAgrotools,
+            wkt: d.wkt,
+            technicalReportUrl: documentosAnalise[0].urlArquivo,
+            typeContestation: d.tipoDeteccao,
+          }) as ItensPlanoAdequacao,
+      ),
     };
 
-    const data: RetornoAdequacao = await axios.post(`${this.url}/Contestation`, request, { headers: this.headersRequest })
+    const data: RetornoAdequacao = await axios
+      .post(`${this.url}/Contestation`, request, {
+        headers: this.headersRequest,
+      })
       .then((res) => {
         return res.data;
-      }).catch((error) => {
-        this.salvaErroRetornoAgrotools(retornoAgrotools, this.getErroAgrotools(error));
+      })
+      .catch((error) => {
+        this.salvaErroRetornoAgrotools(
+          retornoAgrotools,
+          this.getErroAgrotools(error),
+        );
         throw new NegocioException(error.status, this.getErroAgrotools(error));
       });
 
     retornoAgrotools.contestacaoId = data.contestationId;
-    await this.territorioRepository.update({ codigoTerritorio: cdTerritory }, { statusImagem: "ATUALIZAR" });
+    await this.territorioRepository.update(
+      { codigoTerritorio: cdTerritory },
+      { statusImagem: 'ATUALIZAR' },
+    );
     await this.retornoAnaliseRepository.save(retornoAgrotools);
     return data;
-  };
+  }
 
   /**
    * consulta formulario
    * @param surveyId
    */
-  async buscarFormulario(codigoEvidence: number): Promise<FormularioVistoriaResponse> {
-    return await axios.get(`${this.url}/Survey/${codigoEvidence}`, { headers: this.headersRequest })
+  async buscarFormulario(
+    codigoEvidence: number,
+  ): Promise<FormularioVistoriaResponse> {
+    return await axios
+      .get(`${this.url}/Survey/${codigoEvidence}`, {
+        headers: this.headersRequest,
+      })
       .then((res) => {
         return res.data;
-      }).catch((error) => {
+      })
+      .catch((error) => {
         console.log(this.getErroAgrotools(error));
       });
-  };
+  }
 
-
-  async consultaAnaliseSocioAmbiental(request: AnaliseRequest, idPropriedade: number): Promise<RetornoAnaliseEntity> {
-    const retornoExistente = await this.consultaAnalisePorIdPropropriedade(idPropriedade);
+  async consultaAnaliseSocioAmbiental(
+    request: AnaliseRequest,
+    idPropriedade: number,
+  ): Promise<RetornoAnaliseEntity> {
+    const retornoExistente =
+      await this.consultaAnalisePorIdPropropriedade(idPropriedade);
 
     if (!retornoExistente) {
       const solicitacao = await this.solicitarAnaliseSocioAmb(request);
@@ -509,33 +665,38 @@ export class AgrotoolsService {
           moduloFiscal: solicitacao.modulo_fiscal,
           valorMulta: solicitacao.vlr_multa,
           descontoPercentual: solicitacao.desconto_perc,
-          deteccoes: solicitacao.deteccoes.map(d => ({
-            tipo: d.tipo,
-            area_ha: d.area_ha.toString(),
-            idAgrotools: d.id,
-          } as DeteccoesAnaliseEntity)),
-          dataCriacao: (moment(new Date())).format('DD-MMM-YYYY HH:mm:ss'),
-          dataAtualizacao: (moment(new Date())).format('DD-MMM-YYYY HH:mm:ss'),
+          deteccoes: solicitacao.deteccoes.map(
+            (d) =>
+              ({
+                tipo: d.tipo,
+                area_ha: d.area_ha.toString(),
+                idAgrotools: d.id,
+              }) as DeteccoesAnaliseEntity,
+          ),
+          dataCriacao: moment(new Date()).format('DD-MMM-YYYY HH:mm:ss'),
+          dataAtualizacao: moment(new Date()).format('DD-MMM-YYYY HH:mm:ss'),
         } as RetornoAnaliseEntity;
 
         // Validar se seria melhor local
         await this.retornaImagemTerritorio(request.cdTerritory);
         return await this.retornoAnaliseRepository.save(retornoAnalise);
-
       } else {
         throw new BadRequestException('Consulta não disponivel.');
       }
     } else {
-      throw new NegocioException(422, 'Analise Socioambiental já foi solicitada');
+      throw new NegocioException(
+        422,
+        'Analise Socioambiental já foi solicitada',
+      );
     }
-
-
   }
 
-
-  async confirmarSolicitacao(id: number, token: string): Promise<SolicitacaoElegibilidade> {
-
-    const solicitacaoEligibilidade = await this.elegibilidadeService.buscaSolicitacao(id);
+  async confirmarSolicitacao(
+    id: number,
+    token: string,
+  ): Promise<SolicitacaoElegibilidade> {
+    const solicitacaoEligibilidade =
+      await this.elegibilidadeService.buscaSolicitacao(id);
 
     if (!solicitacaoEligibilidade) {
       throw new BadRequestException(
@@ -559,46 +720,60 @@ export class AgrotoolsService {
     }
 
     try {
-      const solicitacaoVerificada = await this.elegibilidadeService.consultaSolicitacaoValidada(solicitacaoEligibilidade.carFederal);
+      const solicitacaoVerificada =
+        await this.elegibilidadeService.consultaSolicitacaoValidada(
+          solicitacaoEligibilidade.carFederal,
+        );
       if (solicitacaoVerificada) {
-        solicitacaoEligibilidade.transactionId = solicitacaoVerificada.transactionId;
+        solicitacaoEligibilidade.transactionId =
+          solicitacaoVerificada.transactionId;
       } else {
         const elegibilidade = { car: solicitacaoEligibilidade.carFederal };
-        const retornoAgrotools = await this.solicitaElegebilidade(elegibilidade);
+        const retornoAgrotools =
+          await this.solicitaElegebilidade(elegibilidade);
 
         if (retornoAgrotools) {
-          solicitacaoEligibilidade.transactionId = retornoAgrotools.transactionId;
+          solicitacaoEligibilidade.transactionId =
+            retornoAgrotools.transactionId;
         }
       }
 
       solicitacaoEligibilidade.confirmacaoEmail = 'SIM';
-      await this.elegibilidadeService.atualizaSolicitacao(solicitacaoEligibilidade);
+      await this.elegibilidadeService.atualizaSolicitacao(
+        solicitacaoEligibilidade,
+      );
 
       return solicitacaoEligibilidade;
     } catch (error) {
       throw new NegocioException(error.status, error?.message);
     }
-
-
   }
 
   async consultaTransacao() {
-    const solicitacoes = await this.elegibilidadeService.consultaPendentesValidacao();
-    let formattedDate = (moment(new Date())).format('DD-MMM-YYYY HH:mm:ss');
+    const solicitacoes =
+      await this.elegibilidadeService.consultaPendentesValidacao();
+    const formattedDate = moment(new Date()).format('DD-MMM-YYYY HH:mm:ss');
     if (solicitacoes && solicitacoes.length > 0) {
-      for (let sol of solicitacoes) {
+      for (const sol of solicitacoes) {
         try {
-          const solicitacaoVerificada = await this.elegibilidadeService.consultaSolicitacaoValidada(sol.carFederal);
+          const solicitacaoVerificada =
+            await this.elegibilidadeService.consultaSolicitacaoValidada(
+              sol.carFederal,
+            );
           if (solicitacaoVerificada?.status == 'ERRO_RETORNO') {
             sol.dataAtualizacao = formattedDate;
             sol.status = solicitacaoVerificada.status;
-            await this.elegibilidadeService.atualizaSolicitacaoRetornoElegibilidade(sol);
+            await this.elegibilidadeService.atualizaSolicitacaoRetornoElegibilidade(
+              sol,
+            );
           } else if (solicitacaoVerificada) {
             sol.retornoAgrotools = solicitacaoVerificada.retornoAgrotools;
             sol.dataAtualizacao = formattedDate;
             sol.status = solicitacaoVerificada.status;
             await this.cadastrarProprietario(sol);
-            await this.elegibilidadeService.atualizaSolicitacaoRetornoElegibilidade(sol);
+            await this.elegibilidadeService.atualizaSolicitacaoRetornoElegibilidade(
+              sol,
+            );
           } else {
             await this.verificaElegibilidadeAgrotools(sol);
           }
@@ -610,41 +785,63 @@ export class AgrotoolsService {
   }
 
   async verificaElegibilidadeAgrotools(soliciatacao: SolicitacaoElegibilidade) {
-    const retorno = await this.verificaRetornoTransacao(soliciatacao.transactionId);
+    const retorno = await this.verificaRetornoTransacao(
+      soliciatacao.transactionId,
+    );
     if (retorno && retorno.status !== 'Error') {
-      const detc = retorno.deteccoes.map(d => ({
-        tipo: d.tipo,
-        area_ha: d.area_ha,
-        idAgrotools: d.id,
-      } as DeteccoesAgrotools));
+      const detc = retorno.deteccoes.map(
+        (d) =>
+          ({
+            tipo: d.tipo,
+            area_ha: d.area_ha,
+            idAgrotools: d.id,
+          }) as DeteccoesAgrotools,
+      );
       const retornoAgr = plainToInstance(RetornoAgrotools, retorno);
       retornoAgr.deteccoes = detc;
-      const retornoAgrotools = await this.retornoAgrotoolsRepository.save(retornoAgr);
+      const retornoAgrotools =
+        await this.retornoAgrotoolsRepository.save(retornoAgr);
       soliciatacao.retornoAgrotools = retornoAgrotools;
-      soliciatacao.status = retornoAgrotools.isEligible ? 'APROVADO' : 'REPROVADO';
+      soliciatacao.status = retornoAgrotools.isEligible
+        ? 'APROVADO'
+        : 'REPROVADO';
       const propriedade = await this.cadastrarPropriedadeElegivel(soliciatacao);
       if (propriedade) {
-        await this.elegibilidadeService.atualizaSolicitacaoRetornoElegibilidade(soliciatacao);
+        await this.elegibilidadeService.atualizaSolicitacaoRetornoElegibilidade(
+          soliciatacao,
+        );
       }
     } else {
       soliciatacao.status = 'ERRO_RETORNO';
-      await this.elegibilidadeService.atualizaSolicitacaoRetornoElegibilidadeErro(soliciatacao);
+      await this.elegibilidadeService.atualizaSolicitacaoRetornoElegibilidadeErro(
+        soliciatacao,
+      );
     }
   }
 
-  async verificaElegibilidadeFrigorifico(soliciatacao: SolicitacaoElegibilidade) {
-    const retorno = await this.verificaRetornoTransacao(soliciatacao.transactionId);
+  async verificaElegibilidadeFrigorifico(
+    soliciatacao: SolicitacaoElegibilidade,
+  ) {
+    const retorno = await this.verificaRetornoTransacao(
+      soliciatacao.transactionId,
+    );
     if (retorno && retorno.status !== 'Error') {
-      const detc = retorno.deteccoes.map(d => ({
-        tipo: d.tipo,
-        area_ha: d.area_ha,
-        idAgrotools: d.id,
-      } as DeteccoesAgrotools));
+      const detc = retorno.deteccoes.map(
+        (d) =>
+          ({
+            tipo: d.tipo,
+            area_ha: d.area_ha,
+            idAgrotools: d.id,
+          }) as DeteccoesAgrotools,
+      );
       const retornoAgr = plainToInstance(RetornoAgrotools, retorno);
       retornoAgr.deteccoes = detc;
-      const retornoAgrotools = await this.retornoAgrotoolsRepository.save(retornoAgr);
+      const retornoAgrotools =
+        await this.retornoAgrotoolsRepository.save(retornoAgr);
       soliciatacao.retornoAgrotools = retornoAgrotools;
-      soliciatacao.status = retornoAgrotools.isEligible ? 'APROVADO' : 'REPROVADO';
+      soliciatacao.status = retornoAgrotools.isEligible
+        ? 'APROVADO'
+        : 'REPROVADO';
       await this.atualizaSolicitacaoFrigorifico(soliciatacao);
     } else {
       soliciatacao.status = 'ERRO_RETORNO';
@@ -652,51 +849,77 @@ export class AgrotoolsService {
     }
   }
 
-
-  async criarTerritorio(territorioAgrotools: TerritorioAgrotoolsRequest): Promise<TerritorioResponse> {
-    return await axios.post(`${this.url}/Territory`, territorioAgrotools, { headers: this.headersRequest })
+  async criarTerritorio(
+    territorioAgrotools: TerritorioAgrotoolsRequest,
+  ): Promise<TerritorioResponse> {
+    return await axios
+      .post(`${this.url}/Territory`, territorioAgrotools, {
+        headers: this.headersRequest,
+      })
       .then((res) => {
         return res.data;
-      }).catch((error) => {
+      })
+      .catch((error) => {
         throw new NegocioException(error.status, this.getErroAgrotools(error));
       });
   }
 
-  async cadastrarPropriedadeElegivel(solicitacaoElegibilidade: SolicitacaoElegibilidade) {
+  async cadastrarPropriedadeElegivel(
+    solicitacaoElegibilidade: SolicitacaoElegibilidade,
+  ) {
     if (solicitacaoElegibilidade) {
       try {
-        const propriedadeCadastrada = await this.propriedadeService.consultaPropriedadePorCar(solicitacaoElegibilidade.carFederal);
+        const propriedadeCadastrada =
+          await this.propriedadeService.consultaPropriedadePorCar(
+            solicitacaoElegibilidade.carFederal,
+          );
         const usuarioAnalista = await this.consultaUsuarioAnalista();
 
         if (propriedadeCadastrada) {
-          const pessoa = await this.pessoaService.buscaOuCadastraPessoa(solicitacaoElegibilidade);
+          const pessoa = await this.pessoaService.buscaOuCadastraPessoa(
+            solicitacaoElegibilidade,
+          );
           const proprietario = {
             pessoa: pessoa,
             telefone: solicitacaoElegibilidade.telefone,
             tipoProprietario: TipoProprietatioEnum.CO_PROPRIETARIO,
           } as Proprietario;
-          const proprietarioSave = await this.proprietarioService.cadastraProprietario(proprietario);
+          const proprietarioSave =
+            await this.proprietarioService.cadastraProprietario(proprietario);
           if (proprietarioSave) {
             propriedadeCadastrada.analista = usuarioAnalista;
             propriedadeCadastrada.proprietarios.push(proprietarioSave);
-            return await this.propriedadeService.cadastrarPropriedade(propriedadeCadastrada);
+            return await this.propriedadeService.cadastrarPropriedade(
+              propriedadeCadastrada,
+            );
           }
         } else {
-          const propriedadeConsulta = await this.elegibilidadeService.buscaProprieddeConsulta(solicitacaoElegibilidade.carFederal);
+          const propriedadeConsulta =
+            await this.elegibilidadeService.buscaProprieddeConsulta(
+              solicitacaoElegibilidade.carFederal,
+            );
           if (propriedadeConsulta) {
-            return this.cadastrarPropriedadeEProprietario(propriedadeConsulta, solicitacaoElegibilidade);
+            return this.cadastrarPropriedadeEProprietario(
+              propriedadeConsulta,
+              solicitacaoElegibilidade,
+            );
           }
         }
-
       } catch (error) {
         console.log(error);
       }
     }
   }
 
-  async cadastrarPropriedadeEProprietario(propriedadeConsulta: PropriedadeConsulta, solicitacaoElegibilidade: SolicitacaoElegibilidade) {
+  async cadastrarPropriedadeEProprietario(
+    propriedadeConsulta: PropriedadeConsulta,
+    solicitacaoElegibilidade: SolicitacaoElegibilidade,
+  ) {
     const props = JSON.parse(propriedadeConsulta.proprietarios);
-    const pessoa = await this.pessoaService.buscaOuCadastra(solicitacaoElegibilidade, props);
+    const pessoa = await this.pessoaService.buscaOuCadastra(
+      solicitacaoElegibilidade,
+      props,
+    );
     const proprietario = {
       pessoa: pessoa,
       telefone: solicitacaoElegibilidade.telefone,
@@ -704,7 +927,8 @@ export class AgrotoolsService {
     } as Proprietario;
     const proprietarios: Proprietario[] = [];
     const usuarioAnalista = await this.consultaUsuarioAnalista();
-    const proprietarioSave = await this.proprietarioService.cadastraProprietario(proprietario);
+    const proprietarioSave =
+      await this.proprietarioService.cadastraProprietario(proprietario);
     if (proprietarioSave) {
       proprietarios.push(proprietarioSave);
       const propriedade = {
@@ -715,16 +939,15 @@ export class AgrotoolsService {
         codigoMunicipio: solicitacaoElegibilidade.codigoMunicipio,
         moduloFiscal: +solicitacaoElegibilidade.retornoAgrotools.modulo_fiscal,
         idSolicitacaoElegibilidade: solicitacaoElegibilidade.id,
-        analista: usuarioAnalista
+        analista: usuarioAnalista,
       } as Propriedade;
       return await this.propriedadeService.cadastrarPropriedade(propriedade);
     }
   }
 
-
   async consultaFormularioAutoVistoria() {
     const autoVistorias = await this.autoVistoriaService.listarAutovistoria();
-    for (let vistoria of autoVistorias) {
+    for (const vistoria of autoVistorias) {
       const formulario = await this.buscarFormulario(vistoria.codigoEvidencia);
       if (formulario && formulario.reportUrl != null) {
         vistoria.formulario = JSON.stringify(formulario);
@@ -733,22 +956,32 @@ export class AgrotoolsService {
     }
   }
 
-  async cadastrarProprietario(solicitacaoElegibilidade: SolicitacaoElegibilidade) {
-    const propriedadeCadastrada = await this.propriedadeService.consultaPropriedadePorCar(solicitacaoElegibilidade.carFederal);
+  async cadastrarProprietario(
+    solicitacaoElegibilidade: SolicitacaoElegibilidade,
+  ) {
+    const propriedadeCadastrada =
+      await this.propriedadeService.consultaPropriedadePorCar(
+        solicitacaoElegibilidade.carFederal,
+      );
 
     if (propriedadeCadastrada) {
       const usuarioAnalista = await this.consultaUsuarioAnalista();
-      const pessoa = await this.pessoaService.buscaOuCadastraPessoa(solicitacaoElegibilidade);
+      const pessoa = await this.pessoaService.buscaOuCadastraPessoa(
+        solicitacaoElegibilidade,
+      );
       const proprietario = {
         pessoa: pessoa,
         telefone: solicitacaoElegibilidade.telefone,
         tipoProprietario: TipoProprietatioEnum.PROPRIETARIO,
       } as Proprietario;
-      const proprietarioSave = await this.proprietarioService.cadastraProprietario(proprietario);
+      const proprietarioSave =
+        await this.proprietarioService.cadastraProprietario(proprietario);
       if (proprietarioSave) {
-        propriedadeCadastrada.analista = usuarioAnalista
+        propriedadeCadastrada.analista = usuarioAnalista;
         propriedadeCadastrada.proprietarios.push(proprietarioSave);
-        return await this.propriedadeService.cadastrarPropriedade(propriedadeCadastrada);
+        return await this.propriedadeService.cadastrarPropriedade(
+          propriedadeCadastrada,
+        );
       }
     }
   }
@@ -762,18 +995,17 @@ export class AgrotoolsService {
                    and u."STATUS" != 'INATIVO'
                  group by u."EMAIL"
                  order by qtd asc
-                     limit 1;`
-    const dados = await this.entityManager.query(sql)
+                     limit 1;`;
+    const dados = await this.entityManager.query(sql);
     return await this.usuarioService.buscarUsuarioPorEmail(dados[0].email);
-
   }
 
   async cadastraPessoaAgrotools() {
-    const usuarios = await this.usuarioService.consultarUsuariosCadastroAgrotools();
+    const usuarios =
+      await this.usuarioService.consultarUsuariosCadastroAgrotools();
 
     if (usuarios.length > 0) {
       for (const usuario of usuarios) {
-
         try {
           const produtorAgortols = {
             name: usuario.pessoa.nome,
@@ -784,21 +1016,32 @@ export class AgrotoolsService {
             address: {
               zipCode: usuario.cep ? usuario.cep : '78048250',
               number: usuario.numero ? usuario.cep : '525',
-              complement: usuario.logradouro ? usuario.cep : 'Av. Dr. Hélio Ribeiro, 525 - Sala 701',
+              complement: usuario.logradouro
+                ? usuario.cep
+                : 'Av. Dr. Hélio Ribeiro, 525 - Sala 701',
             } as EnderecoProdutorAgrotools,
           } as ProdutorAgrotools;
 
-          const response = await this.consultarUsuarioCadastrado(usuario.pessoa.email);
+          const response = await this.consultarUsuarioCadastrado(
+            usuario.pessoa.email,
+          );
 
-          const pessoa = await this.pessoaService.buscaPessoaEmail(usuario.pessoa.email);
+          const pessoa = await this.pessoaService.buscaPessoaEmail(
+            usuario.pessoa.email,
+          );
 
           if (response) {
-            pessoa.idUsuarioAgrotools = response.idUser ? response.idUser : response.userId;
+            pessoa.idUsuarioAgrotools = response.idUser
+              ? response.idUser
+              : response.userId;
             await this.pessoaService.atualizarPessoa(pessoa);
           } else {
-            const produtorResponse = await this.cadastrarProdutorJob(produtorAgortols);
+            const produtorResponse =
+              await this.cadastrarProdutorJob(produtorAgortols);
             if (produtorResponse) {
-              pessoa.idUsuarioAgrotools = produtorResponse.idUser ? produtorResponse.idUser : produtorResponse.userId;
+              pessoa.idUsuarioAgrotools = produtorResponse.idUser
+                ? produtorResponse.idUser
+                : produtorResponse.userId;
               await this.pessoaService.atualizarPessoa(pessoa);
             }
           }
@@ -809,7 +1052,6 @@ export class AgrotoolsService {
       }
     }
   }
-
 
   async consultaPlanoPorIdAnalise(idAnalise: number) {
     return await this.planoAdequacaoRepository.findOne({
@@ -828,57 +1070,82 @@ export class AgrotoolsService {
   }
 
   async atualizaIdContestacao(planoAdequacao: PlanoAdequacao) {
-    await this.planoAdequacaoRepository.update(planoAdequacao.id, planoAdequacao);
+    await this.planoAdequacaoRepository.update(
+      planoAdequacao.id,
+      planoAdequacao,
+    );
   }
 
   async consultaAnalise(idAnalise: number) {
     return await this.retornoAnaliseRepository.findOne({
       where: {
         id: idAnalise,
-        erroAgrotools: IsNull()
+        erroAgrotools: IsNull(),
       },
       relations: ['deteccoes', 'documentos'],
     });
   }
 
   private async verificaContestacoesAnaliseNaoSalvas() {
-    const analiseComContestacoesNaoSalvas = await this.retornoAnaliseRepository.find({
-      where: [{
-        contestacaoId: IsNull(),
-        contestacaoAutorizacaoSupressao: {
-          situacao: Raw(alias => `LOWER(${alias}) IN ('deferido', 'deferido parcialmente')`),
-        },
-      },
-      {
-        contestacaoId: IsNull(),
-        contestacaoLaudo: {
-          situacao: Raw(alias => `LOWER(${alias}) IN ('deferido', 'deferido parcialmente')`),
-        },
-      },
-      ],
-      relations: ['contestacaoAutorizacaoSupressao', 'contestacaoLaudo', 'propriedade', 'propriedade.territorios'],
-    });
+    const analiseComContestacoesNaoSalvas =
+      await this.retornoAnaliseRepository.find({
+        where: [
+          {
+            contestacaoId: IsNull(),
+            contestacaoAutorizacaoSupressao: {
+              situacao: Raw(
+                (alias) =>
+                  `LOWER(${alias}) IN ('deferido', 'deferido parcialmente')`,
+              ),
+            },
+          },
+          {
+            contestacaoId: IsNull(),
+            contestacaoLaudo: {
+              situacao: Raw(
+                (alias) =>
+                  `LOWER(${alias}) IN ('deferido', 'deferido parcialmente')`,
+              ),
+            },
+          },
+        ],
+        relations: [
+          'contestacaoAutorizacaoSupressao',
+          'contestacaoLaudo',
+          'propriedade',
+          'propriedade.territorios',
+        ],
+      });
 
-    await Promise.allSettled(analiseComContestacoesNaoSalvas.flatMap(analise => {
-      return analise.propriedade?.territorios.map(territorio => this.salvaContestacao(territorio.codigoTerritorio, analise.id));
-    }));
+    await Promise.allSettled(
+      analiseComContestacoesNaoSalvas.flatMap((analise) => {
+        return analise.propriedade?.territorios.map((territorio) =>
+          this.salvaContestacao(territorio.codigoTerritorio, analise.id),
+        );
+      }),
+    );
   }
 
   private async verificaContestacoesSemDocumento() {
-    const contestacoesAnalisesSalvasSemUrl = await this.retornoAnaliseRepository.find({
-      where: {
-        contestacaoId: Not(IsNull()),
-        erroAgrotools: IsNull(),
-        deteccoes: {
-          urlContestacao: IsNull(),
+    const contestacoesAnalisesSalvasSemUrl =
+      await this.retornoAnaliseRepository.find({
+        where: {
+          contestacaoId: Not(IsNull()),
+          erroAgrotools: IsNull(),
+          deteccoes: {
+            urlContestacao: IsNull(),
+          },
         },
-      },
-      relations: ['deteccoes', 'propriedade', 'propriedade.territorios'],
-    });
+        relations: ['deteccoes', 'propriedade', 'propriedade.territorios'],
+      });
 
-    await Promise.allSettled(contestacoesAnalisesSalvasSemUrl.flatMap(analise => {
-      return analise.propriedade?.territorios.map(territorio => this.buscarDocumento(analise.id, territorio.codigoTerritorio));
-    }));
+    await Promise.allSettled(
+      contestacoesAnalisesSalvasSemUrl.flatMap((analise) => {
+        return analise.propriedade?.territorios.map((territorio) =>
+          this.buscarDocumento(analise.id, territorio.codigoTerritorio),
+        );
+      }),
+    );
   }
 
   private async verificaAnaliseSemImagem() {
@@ -887,76 +1154,124 @@ export class AgrotoolsService {
         contestacaoId: IsNull(),
         propriedade: {
           territorios: {
-            imagemAdequacao: IsNull()
+            imagemAdequacao: IsNull(),
           },
         },
         planoAdequacao: {
           adequacaoId: IsNull(),
         },
       },
-      relations: ['deteccoes', 'propriedade', 'propriedade.territorios', 'planoAdequacao'],
+      relations: [
+        'deteccoes',
+        'propriedade',
+        'propriedade.territorios',
+        'planoAdequacao',
+      ],
     });
 
-    await Promise.allSettled(AnalisesSalvasSemImagem.flatMap(analise => {
-      return analise.propriedade?.territorios.map(territorio => this.retornaImagemTerritorio(territorio.codigoTerritorio, territorio.hashImagem));
-    }));
+    await Promise.allSettled(
+      AnalisesSalvasSemImagem.flatMap((analise) => {
+        return analise.propriedade?.territorios.map((territorio) =>
+          this.retornaImagemTerritorio(
+            territorio.codigoTerritorio,
+            territorio.hashImagem,
+          ),
+        );
+      }),
+    );
   }
 
   private async verificaContestacoesSemImagem() {
-    const contestacoesAnalisesSalvasSemImagem = await this.retornoAnaliseRepository.find({
-      where: {
-        contestacaoId: Not(IsNull()),
-        propriedade: {
-          territorios: {
-            statusImagem: Equal("ATUALIZAR")
+    const contestacoesAnalisesSalvasSemImagem =
+      await this.retornoAnaliseRepository.find({
+        where: {
+          contestacaoId: Not(IsNull()),
+          propriedade: {
+            territorios: {
+              statusImagem: Equal('ATUALIZAR'),
+            },
+          },
+          planoAdequacao: {
+            adequacaoId: IsNull(),
           },
         },
-        planoAdequacao: {
-          adequacaoId: IsNull(),
-        },
-      },
-      relations: ['deteccoes', 'propriedade', 'propriedade.territorios', 'planoAdequacao'],
-    });
+        relations: [
+          'deteccoes',
+          'propriedade',
+          'propriedade.territorios',
+          'planoAdequacao',
+        ],
+      });
 
-    await Promise.allSettled(contestacoesAnalisesSalvasSemImagem.flatMap(analise => {
-      return analise.propriedade?.territorios.map(territorio => this.retornaImagemTerritorio(territorio.codigoTerritorio, territorio.hashImagem));
-    }));
+    await Promise.allSettled(
+      contestacoesAnalisesSalvasSemImagem.flatMap((analise) => {
+        return analise.propriedade?.territorios.map((territorio) =>
+          this.retornaImagemTerritorio(
+            territorio.codigoTerritorio,
+            territorio.hashImagem,
+          ),
+        );
+      }),
+    );
   }
 
   private async verficaPlanosAdequacaoNaoSalvos() {
     const planosAdequacaoNaoSalvos = await this.planoAdequacaoRepository.find({
       where: {
         adequacaoId: IsNull(),
-        situacao: Raw(alias => `LOWER(${alias}) IN ('deferido', 'deferido parcialmente')`),
+        situacao: Raw(
+          (alias) => `LOWER(${alias}) IN ('deferido', 'deferido parcialmente')`,
+        ),
       },
-      relations: ['analiseSocioambiental', 'analiseSocioambiental.propriedade', 'analiseSocioambiental.propriedade.territorios'],
+      relations: [
+        'analiseSocioambiental',
+        'analiseSocioambiental.propriedade',
+        'analiseSocioambiental.propriedade.territorios',
+      ],
     });
 
-    await Promise.allSettled(planosAdequacaoNaoSalvos.flatMap(plano => {
-      return plano.analiseSocioambiental.propriedade?.territorios.map(async territorio => {
-        return this.salvaPlanoAdequacao(territorio.codigoTerritorio, plano.analiseSocioambiental.id);
-      });
-    }));
+    await Promise.allSettled(
+      planosAdequacaoNaoSalvos.flatMap((plano) => {
+        return plano.analiseSocioambiental.propriedade?.territorios.map(
+          async (territorio) => {
+            return this.salvaPlanoAdequacao(
+              territorio.codigoTerritorio,
+              plano.analiseSocioambiental.id,
+            );
+          },
+        );
+      }),
+    );
   }
 
   private async verificaPlanosAdequacaoSemImagem() {
-    const planosAdequacaoSalvasSemImagem = await this.planoAdequacaoRepository.find({
-      where: {
-        adequacaoId: Not(IsNull()),
-        analiseSocioambiental: {
-          propriedade: {
-            territorios: {
-              statusImagem: Equal("ATUALIZAR")
+    const planosAdequacaoSalvasSemImagem =
+      await this.planoAdequacaoRepository.find({
+        where: {
+          adequacaoId: Not(IsNull()),
+          analiseSocioambiental: {
+            propriedade: {
+              territorios: {
+                statusImagem: Equal('ATUALIZAR'),
+              },
             },
           },
         },
-      },
-      relations: ['analiseSocioambiental', 'analiseSocioambiental.propriedade', 'analiseSocioambiental.propriedade.territorios'],
-    });
+        relations: [
+          'analiseSocioambiental',
+          'analiseSocioambiental.propriedade',
+          'analiseSocioambiental.propriedade.territorios',
+        ],
+      });
 
-    await Promise.allSettled(planosAdequacaoSalvasSemImagem.flatMap(plano => {
-      return plano.analiseSocioambiental.propriedade?.territorios.map(territorio => this.retornaImagemPlanoJob(territorio.codigoTerritorio));
-    }));
+    await Promise.allSettled(
+      planosAdequacaoSalvasSemImagem.flatMap((plano) => {
+        return plano.analiseSocioambiental.propriedade?.territorios.map(
+          (territorio) =>
+            this.retornaImagemPlanoJob(territorio.codigoTerritorio),
+        );
+      }),
+    );
   }
 
   async verificaAnalise() {
@@ -986,43 +1301,61 @@ export class AgrotoolsService {
     }
   }
 
-  async consultaSolicitacaoFrigorifico(solicitacao: SolicitacaoElegibilidade): Promise<SolicitacaoElegibilidade> {
-    const data = await this.solicitaElegebilidade({ car: solicitacao.carFederal });
+  async consultaSolicitacaoFrigorifico(
+    solicitacao: SolicitacaoElegibilidade,
+  ): Promise<SolicitacaoElegibilidade> {
+    const data = await this.solicitaElegebilidade({
+      car: solicitacao.carFederal,
+    });
     solicitacao.transactionId = data.transactionId;
-    const retorno = await this.verificaRetornoTransacao(solicitacao.transactionId);
+    const retorno = await this.verificaRetornoTransacao(
+      solicitacao.transactionId,
+    );
     if (retorno.status == 'Started') {
       return await this.elegibilidadeService.salvarElegibilidade(solicitacao);
     } else if (retorno && retorno.status !== 'Error') {
-      const detc = retorno.deteccoes.map(d => ({
-        tipo: d.tipo,
-        area_ha: d.area_ha,
-        idAgrotools: d.id,
-      } as DeteccoesAgrotools));
+      const detc = retorno.deteccoes.map(
+        (d) =>
+          ({
+            tipo: d.tipo,
+            area_ha: d.area_ha,
+            idAgrotools: d.id,
+          }) as DeteccoesAgrotools,
+      );
       const retornoAgr = plainToInstance(RetornoAgrotools, retorno);
       retornoAgr.deteccoes = detc;
-      const retornoAgrotools = await this.retornoAgrotoolsRepository.save(retornoAgr);
+      const retornoAgrotools =
+        await this.retornoAgrotoolsRepository.save(retornoAgr);
       solicitacao.retornoAgrotools = retornoAgrotools;
-      solicitacao.status = retornoAgrotools.isEligible ? 'APROVADO' : 'REPROVADO';
+      solicitacao.status = retornoAgrotools.isEligible
+        ? 'APROVADO'
+        : 'REPROVADO';
       return await this.elegibilidadeService.salvarElegibilidade(solicitacao);
     } else {
       solicitacao.status = 'ERRO_RETORNO';
       return await this.elegibilidadeService.salvarElegibilidade(solicitacao);
     }
-
   }
 
   async consultaTransacaoFrigorico() {
-    const solicitacoes = await this.elegibilidadeService.consultaPendentesFrigorico();
-    let formattedDate = (moment(new Date())).format('DD-MMM-YYYY HH:mm:ss');
+    const solicitacoes =
+      await this.elegibilidadeService.consultaPendentesFrigorico();
+    const formattedDate = moment(new Date()).format('DD-MMM-YYYY HH:mm:ss');
     if (solicitacoes && solicitacoes.length > 0) {
-      for (let sol of solicitacoes) {
+      for (const sol of solicitacoes) {
         try {
-          const solicitacaoVerificada = await this.elegibilidadeService.consultaSolicitacaoValidada(sol.carFederal);
+          const solicitacaoVerificada =
+            await this.elegibilidadeService.consultaSolicitacaoValidada(
+              sol.carFederal,
+            );
           if (solicitacaoVerificada?.status == 'ERRO_RETORNO') {
             sol.dataAtualizacao = formattedDate;
             sol.status = solicitacaoVerificada.status;
             await this.atualizaSolicitacaoFrigorifico(sol);
-          } else if (solicitacaoVerificada?.status == 'APROVADO' || solicitacaoVerificada?.status == 'REPROVADO') {
+          } else if (
+            solicitacaoVerificada?.status == 'APROVADO' ||
+            solicitacaoVerificada?.status == 'REPROVADO'
+          ) {
             sol.retornoAgrotools = solicitacaoVerificada.retornoAgrotools;
             sol.dataAtualizacao = formattedDate;
             sol.status = solicitacaoVerificada.status;
@@ -1038,10 +1371,15 @@ export class AgrotoolsService {
   }
 
   async atualizaSolicitacaoFrigorifico(solicitacao: SolicitacaoElegibilidade) {
-    await this.elegibilidadeService.atualizaSolicitacaoRetornoElegibilidadeFrigorifico(solicitacao);
+    await this.elegibilidadeService.atualizaSolicitacaoRetornoElegibilidadeFrigorifico(
+      solicitacao,
+    );
   }
 
-  async cadastrarPropriedadeEProprietarioFrigorifico(usuario: UsuarioResponse, solicitacaoElegibilidade: SolicitacaoElegibilidade) {
+  async cadastrarPropriedadeEProprietarioFrigorifico(
+    usuario: UsuarioResponse,
+    solicitacaoElegibilidade: SolicitacaoElegibilidade,
+  ) {
     const pessoa = await this.pessoaService.buscaPessoaEmail(usuario.email);
     const proprietario = {
       pessoa: pessoa,
@@ -1049,10 +1387,14 @@ export class AgrotoolsService {
       tipoProprietario: TipoProprietatioEnum.PROPRIETARIO,
     } as Proprietario;
     const proprietarios: Proprietario[] = [];
-    const proprietarioSave = await this.proprietarioService.cadastraProprietario(proprietario);
+    const proprietarioSave =
+      await this.proprietarioService.cadastraProprietario(proprietario);
     if (proprietarioSave) {
       proprietarios.push(proprietarioSave);
-      const propriedade = await this.propriedadeService.buscaPropriedadePorSolicitacao(solicitacaoElegibilidade.id);
+      const propriedade =
+        await this.propriedadeService.buscaPropriedadePorSolicitacao(
+          solicitacaoElegibilidade.id,
+        );
       if (propriedade) {
         propriedade.proprietarios.push(proprietarioSave);
         return await this.propriedadeService.cadastrarPropriedade(propriedade);
@@ -1062,46 +1404,53 @@ export class AgrotoolsService {
           proprietarios: proprietarios,
           nomePropriedade: solicitacaoElegibilidade.nomePropriedade,
           codigoMunicipio: solicitacaoElegibilidade.codigoMunicipio,
-          moduloFiscal: +solicitacaoElegibilidade.retornoAgrotools.modulo_fiscal,
+          moduloFiscal:
+            +solicitacaoElegibilidade.retornoAgrotools.modulo_fiscal,
           idSolicitacaoElegibilidade: solicitacaoElegibilidade.id,
         } as Propriedade;
         return await this.propriedadeService.cadastrarPropriedade(propriedade);
       }
-
     }
   }
 
   async cadastrarTerritorio() {
-    const propriedades = await this.propriedadeService.consultarPropriedadeTerritorio();
+    const propriedades =
+      await this.propriedadeService.consultarPropriedadeTerritorio();
     if (propriedades) {
-      for (let propriedade of propriedades) {
-
+      for (const propriedade of propriedades) {
         if (propriedade.territorios.length == 0) {
-
           const territorioBase = await this.territorioRepository.findOne({
             where: { idPropriedade: propriedade.id },
           });
 
-          const proprietarios = propriedade.proprietarios.filter(p => p.pessoa.idUsuarioAgrotools != null);
+          const proprietarios = propriedade.proprietarios.filter(
+            (p) => p.pessoa.idUsuarioAgrotools != null,
+          );
 
           if (!territorioBase && proprietarios.length > 0) {
-            let territorioResponse = await this.consultarTerritorio(propriedade.id);
+            let territorioResponse = await this.consultarTerritorio(
+              propriedade.id,
+            );
             if (!territorioResponse) {
               const territorio = {
                 car: propriedade.carFederal,
                 vlOwnerCode: propriedade.id.toString(),
                 territoryName: propriedade.nomePropriedade,
-                producersId: proprietarios.map(p => p.pessoa.idUsuarioAgrotools),
-                agents: [{
-                  name: propriedade.proprietarios[0].pessoa.nome,
-                  document: propriedade.proprietarios[0].pessoa.cpfCnpj,
-                }],
+                producersId: proprietarios.map(
+                  (p) => p.pessoa.idUsuarioAgrotools,
+                ),
+                agents: [
+                  {
+                    name: propriedade.proprietarios[0].pessoa.nome,
+                    document: propriedade.proprietarios[0].pessoa.cpfCnpj,
+                  },
+                ],
               } as TerritorioAgrotoolsRequest;
               try {
                 territorioResponse = await this.criarTerritorio(territorio);
                 await this.salvaTerritorio(territorioResponse, propriedade);
               } catch (error) {
-                console.error("error");
+                console.error('error');
               }
             } else {
               await this.salvaTerritorio(territorioResponse, propriedade);
@@ -1112,11 +1461,16 @@ export class AgrotoolsService {
     }
   }
 
-  async salvaTerritorio(territorioResponse: TerritorioResponse, propriedade: Propriedade) {
+  async salvaTerritorio(
+    territorioResponse: TerritorioResponse,
+    propriedade: Propriedade,
+  ) {
     const territorioEntity = {
       idPropriedade: propriedade.id,
       codigoTerritorio: territorioResponse.cdTerritory,
-      codigoAgents: territorioResponse.cdAgents ? territorioResponse.cdAgents.toString() : [],
+      codigoAgents: territorioResponse.cdAgents
+        ? territorioResponse.cdAgents.toString()
+        : [],
       car: propriedade.carFederal,
       geometry: territorioResponse.geom,
     } as TerritorioEntity;
@@ -1127,25 +1481,31 @@ export class AgrotoolsService {
   async atualizaImagem() {
     const territorios = await this.territorioRepository.find({
       where: {
-        statusImagem: IsNull()
+        statusImagem: IsNull(),
       },
     });
 
     if (territorios) {
-      for (let territorio of territorios) {
-
-        const data: ImagemPlano = await axios.post(`${this.url}/AdequancyPlan/generate-image/${territorio.codigoTerritorio}`, { headers: this.headersRequest })
+      for (const territorio of territorios) {
+        const data: ImagemPlano = await axios
+          .post(
+            `${this.url}/AdequancyPlan/generate-image/${territorio.codigoTerritorio}`,
+            { headers: this.headersRequest },
+          )
           .then((res) => {
             return res.data;
-          }).catch(async (error) => {
+          })
+          .catch(async (error) => {
             territorio.statusImagem = this.getErroAgrotools(error);
             await this.territorioRepository.update(territorio.id, territorio);
             return null;
           });
         if (data) {
-          const documento = await this.documentoUploadService.uploadBase64Image(data.base64Image);
+          const documento = await this.documentoUploadService.uploadBase64Image(
+            data.base64Image,
+          );
           territorio.imagemAdequacao = documento.url;
-          territorio.statusImagem = "ATUALIZADA";
+          territorio.statusImagem = 'ATUALIZADA';
           await this.territorioRepository.update(territorio.id, territorio);
         }
       }
@@ -1154,16 +1514,19 @@ export class AgrotoolsService {
 
   getErroAgrotools(error: any): string {
     if (error.response.data.Message) {
-      return "Erro Agrotools: " + error.response.data.Message;
+      return 'Erro Agrotools: ' + error.response.data.Message;
     }
     if (error.response.data.message) {
-      return "Erro Agrotools: " + error.response.data.message
+      return 'Erro Agrotools: ' + error.response.data.message;
     } else {
-      return "Erro Agrotools: "
+      return 'Erro Agrotools: ';
     }
   }
 
-  async salvaErroRetornoAgrotools(retornoAgrotools: RetornoAnaliseEntity, erroAgrotoos: string) {
+  async salvaErroRetornoAgrotools(
+    retornoAgrotools: RetornoAnaliseEntity,
+    erroAgrotoos: string,
+  ) {
     const id = retornoAgrotools.id;
     const rawSql = `
       UPDATE "IMAC"."TB_RETORNO_ANALISE"
@@ -1172,5 +1535,4 @@ export class AgrotoolsService {
     `;
     await this.entityManager.query(rawSql, [erroAgrotoos, id]);
   }
-
 }

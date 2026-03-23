@@ -1,13 +1,30 @@
-import { Body, Controller, Get, HttpStatus, Param, Post, Query, Res } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  HttpStatus,
+  Param,
+  Post,
+  Query,
+  Res,
+} from '@nestjs/common';
 import { ElegibilidadeService } from './elegibilidade.service';
 import { CreateElegibilidadeRequestDto } from './dto/create-elegibilidade-request.dto';
-import { ApiBody, ApiExcludeEndpoint, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
+import {
+  ApiBody,
+  ApiExcludeEndpoint,
+  ApiQuery,
+  ApiResponse,
+  ApiTags,
+} from '@nestjs/swagger';
 import { ConsultaCarQueryDto } from './dto/consulta-car-query-dto';
-import { ValidarConsultaQueryDto } from './dto/validar-consulta-query-dto';
 import { ConsultaSolicitacaoQueryDto } from './dto/consulta-solicitacao-query-dto';
 import { WebhookElegibilidadeDTO } from './dto/webhook-eligibilidade-dto';
 import { Response } from 'express';
-import { SolicitacaoElegibilidade, StatusSolicitacaoEligibilidade } from './entities/solicitacao-elegibilidade.entity';
+import {
+  SolicitacaoElegibilidade,
+  StatusSolicitacaoEligibilidade,
+} from './entities/solicitacao-elegibilidade.entity';
 import { PropriedadeConsulta } from './entities/consulta/propriedade-consulta.entity';
 import { plainToInstance } from 'class-transformer';
 import { ListarEligibilidadeResponse } from './response/listar-eligibilidade-response';
@@ -19,10 +36,7 @@ import { PaginatedResponseInterface } from '../shared/interfaces/paginated-respo
 @ApiTags('Elegibilidade')
 @Controller('/elegibilidades')
 export class ElegibilidadeController {
-  constructor(
-    private readonly elegibilidadeService: ElegibilidadeService,
-  ) {
-  }
+  constructor(private readonly elegibilidadeService: ElegibilidadeService) {}
 
   @Get('listar')
   @ApiQuery({ name: 'email', required: false })
@@ -32,10 +46,18 @@ export class ElegibilidadeController {
   @ApiQuery({ name: 'nomeProdutor', required: false })
   @ApiQuery({ name: 'nomePropriedade', required: false })
   @ApiQuery({ name: 'cpfCnpj', required: false })
-  @ApiQuery({ name: 'status', enum: StatusSolicitacaoEligibilidade, required: false })
+  @ApiQuery({
+    name: 'status',
+    enum: StatusSolicitacaoEligibilidade,
+    required: false,
+  })
   @ApiQuery({ name: 'page', type: Number, required: false })
   @ApiQuery({ name: 'size', type: Number, required: false })
-  @ApiResponse({ status: 200, description: '', type: createSwaggerPaginatedResponseDto(ListarEligibilidadeResponse) })
+  @ApiResponse({
+    status: 200,
+    description: '',
+    type: createSwaggerPaginatedResponseDto(ListarEligibilidadeResponse),
+  })
   @ApiResponse({ status: 403, description: 'Forbidden.' })
   async listar(
     @Query('email') email?: string,
@@ -48,9 +70,22 @@ export class ElegibilidadeController {
     @Query('page') page = 1,
     @Query('size') size = 10,
   ): Promise<PaginatedResponseInterface<ListarEligibilidadeResponse>> {
-    const [eligibidades, total] = await this.elegibilidadeService.listarPaginado(email, numeroCar, carEstadual,status, nomeProdutor, nomePropriedade, cpfCnpj, page, size);
+    const [eligibidades, total] =
+      await this.elegibilidadeService.listarPaginado(
+        email,
+        numeroCar,
+        carEstadual,
+        status,
+        nomeProdutor,
+        nomePropriedade,
+        cpfCnpj,
+        page,
+        size,
+      );
 
-    const data = plainToInstance(ListarEligibilidadeResponse, eligibidades, { excludeExtraneousValues: true });
+    const data = plainToInstance(ListarEligibilidadeResponse, eligibidades, {
+      excludeExtraneousValues: true,
+    });
 
     return { data, total, page, size };
   }
@@ -63,14 +98,23 @@ export class ElegibilidadeController {
   }
 
   @Post('/solicitacoes')
-  @ApiResponse({ status: 200, description: 'Solicitação de Elegibilidade cadastrada com sucesso.' })
+  @ApiResponse({
+    status: 200,
+    description: 'Solicitação de Elegibilidade cadastrada com sucesso.',
+  })
   @ApiResponse({ status: 403, description: 'Forbidden.' })
   @ApiBody({
     type: CreateElegibilidadeRequestDto,
-    description: 'Solicitação de Elegibilidade contendo CAR, telefone, email e cpf ou cnpj',
+    description:
+      'Solicitação de Elegibilidade contendo CAR, telefone, email e cpf ou cnpj',
   })
-  async criarSolicitacao(@Body() createElegibilidadeRequestDto: CreateElegibilidadeRequestDto, @Res() res: Response) {
-    await this.elegibilidadeService.criarSolicitacao(createElegibilidadeRequestDto);
+  async criarSolicitacao(
+    @Body() createElegibilidadeRequestDto: CreateElegibilidadeRequestDto,
+    @Res() res: Response,
+  ) {
+    await this.elegibilidadeService.criarSolicitacao(
+      createElegibilidadeRequestDto,
+    );
 
     return res.status(HttpStatus.OK).json({
       message: 'Solicitação enviada com sucesso!',
@@ -81,7 +125,8 @@ export class ElegibilidadeController {
   @Get('/solicitacoes')
   @ApiResponse({
     status: 200,
-    description: 'Consulta uma solicitação de elegibilidade baseada nos parametro CAR, Nome Propriedade,  Municipio e status voucher.',
+    description:
+      'Consulta uma solicitação de elegibilidade baseada nos parametro CAR, Nome Propriedade,  Municipio e status voucher.',
     type: SolicitacaoElegibilidade,
   })
   @ApiResponse({ status: 403, description: 'Forbidden.' })
@@ -89,18 +134,21 @@ export class ElegibilidadeController {
     return this.elegibilidadeService.consultaSolicitacaoElegibilidade(filtro);
   }
 
-
   @Get('/consulta-car')
   @ApiResponse({
     status: 200,
-    description: 'Consulta um car baseado no cpf, cnpj ou numero do car estatual.',
+    description:
+      'Consulta um car baseado no cpf, cnpj ou numero do car estatual.',
     type: PropriedadeConsulta,
   })
   @ApiResponse({ status: 403, description: 'Forbidden.' })
   consultaCar(@Query() query: ConsultaCarQueryDto) {
-    return this.elegibilidadeService.consultaPropriedadeConsultaCar(query.cpf, query.cnpj, query.carEstadual);
+    return this.elegibilidadeService.consultaPropriedadeConsultaCar(
+      query.cpf,
+      query.cnpj,
+      query.carEstadual,
+    );
   }
-
 
   @Get('/solicitacoes/:email')
   @ApiResponse({
@@ -113,7 +161,6 @@ export class ElegibilidadeController {
     return this.elegibilidadeService.buscarElegidibilidadePorEmail(email);
   }
 
-
   @ApiExcludeEndpoint(true)
   @Post('/webhook')
   @ApiResponse({ status: 200, description: 'Webhook recebido.' })
@@ -121,7 +168,6 @@ export class ElegibilidadeController {
   webhook(@Body() body: WebhookElegibilidadeDTO) {
     console.log(body);
   }
-
 
   @Get('/grafico-acompanhamento-geral')
   @ApiQuery({ name: 'dataInicio', required: false })
@@ -136,6 +182,9 @@ export class ElegibilidadeController {
     @Query('dataInicio') dataInicio?: string,
     @Query('dataFim') dataFim?: string,
   ) {
-    return this.elegibilidadeService.graficoAcompanhamentoGeral(dataInicio, dataFim);
+    return this.elegibilidadeService.graficoAcompanhamentoGeral(
+      dataInicio,
+      dataFim,
+    );
   }
 }
