@@ -13,6 +13,7 @@ export class JobElegibilidadeService {
     @Inject(forwardRef(() => CobrancasService))
     private readonly cobrancaService: CobrancasService,
   ) {}
+
   //VERIFICA TRANSAÇÃO CONSULTA ELEGIBILIDADE
   @Cron(CronExpression.EVERY_MINUTE)
   verificaConsultaTransacao() {
@@ -29,11 +30,6 @@ export class JobElegibilidadeService {
   verificaFormulario() {
     this.agroToolsService.consultaFormularioAutoVistoria();
   }
-
-  // @Cron("0 */4 * * * *")
-  // verificaImagemFormulario() {
-  //   this.agroToolsService.atualizaImagem();
-  // }
 
   @Cron('0 */1 * * * *')
   cadastrarPessoaAgrotools() {

@@ -27,11 +27,9 @@ import { Proprietario } from '../propriedade-prem/entities/proprietario.entity';
 import { Propriedade } from '../propriedade-prem/entities/propriedade.entity';
 import { EligibilidadeAsyncAgrotoolsResponse } from './response/eligibilidade-async-agrotools-response';
 import NegocioException from '../exception/negocio-exception';
-import { ValidarVoucherResponse } from './response/validar-voucher-response';
 import { TipoProprietatioEnum } from '../propriedade-prem/enum/tipo-proprietatio-enum';
 import * as moment from 'moment';
 import { PropriedadeConsulta } from '../elegibilidade/entities/consulta/propriedade-consulta.entity';
-import { ValidarVoucher } from './request/validar-voucher';
 import { ProdutorAgrotools } from './request/produtor-agrotools';
 import { ProdutorAgrotoolsResponse } from './response/produtor-agrotools-response';
 import axios from 'axios';
@@ -44,13 +42,9 @@ import { SolicitacaoAnaliseResponse } from './response/solicitacao-analise-respo
 import { RetornoAnaliseEntity } from './entities/retorno-analise.entity';
 import { DeteccoesAgrotools } from '../elegibilidade/entities/deteccoes-agrotools.entity';
 import { DeteccoesAnaliseEntity } from './entities/deteccoes-analise.entity';
-import {
-  Etapas,
-  StatusEtapas,
-} from '../propriedade-prem/enum/etapas-status-propriedade.const';
 import { VistoriaAgrotools } from './request/vistoria-agrotools';
 import { AutoVistoriaService } from '../propriedade-prem/auto-vistoria/auto-vistoria.service';
-import { createHash, randomUUID } from 'crypto';
+import { createHash } from 'crypto';
 import { EnderecoProdutorAgrotools } from './request/endereco-produtor-agrotools';
 import { UsuarioService } from '../usuario/usuario.service';
 import { PlanoAdequacaoRequest } from './request/planoAdequacao/plano-adequacao-request';
@@ -268,31 +262,6 @@ export class AgrotoolsService {
       .catch((error) => {
         console.log(this.getErroAgrotools(error));
       });
-  }
-
-  /** METODO TEMPORARIO POIS FOI DESCONTINUADO METODO DE PAGAMENTO
-   * Validar voucher
-   * @param validarVoucher
-   */
-  async validaVoucher(
-    validarVoucher: ValidarVoucher,
-  ): Promise<ValidarVoucherResponse> {
-    const validacao = {
-      voucherAlreadyApplied: true,
-      cdTerritory: randomUUID(),
-    };
-    const propriedade = await this.propriedadeService.consultaPropriedadePorId(
-      validarVoucher.idPropriedade,
-    );
-    if (propriedade) {
-      propriedade.voucher = validarVoucher.voucher;
-      propriedade.statusVoucher = true;
-      propriedade.etapa = Etapas.Cadastro;
-      propriedade.status = StatusEtapas[Etapas.Cadastro].CadastroIncompleto;
-      await this.propriedadeService.atualizaPropriedade(propriedade);
-    }
-
-    return validacao;
   }
 
   /**
