@@ -183,7 +183,7 @@ export class MensagemService {
       });
   }
 
-  async gerarStringAleatoria() {
+  gerarStringAleatoria() {
     let resultado = '';
     const caracteres =
       'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
