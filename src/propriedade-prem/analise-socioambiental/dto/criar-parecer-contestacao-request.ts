@@ -10,7 +10,6 @@ import {
 import { BaseUploadRequest } from '../../../shared/dto/base-upload-request.dto';
 import { SituacaoContestacaoEnum } from '../enum/situacao-contestacao.enum';
 import { Type } from 'class-transformer';
-import { IsWktPolygon } from '../../../shared/decorators/is-wkt-polygon.decorator';
 
 export class Poligono {
   @ApiProperty({
@@ -52,7 +51,7 @@ export class Poligono {
     type: String,
   })
   @IsString()
-  @IsWktPolygon()
+  //@IsWktPolygon()
   wkt: string;
 
   @ApiProperty({
