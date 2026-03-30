@@ -21,13 +21,15 @@ export class ValidacaoArquivoPipe implements PipeTransform {
       throw new BadRequestException(errorMessages);
     }
 
-    parsedBody.poligonos.forEach(p => {
-      if (p.tipoDeteccao == 2 && (p.wkt == null || p.wkt == '')){
-        throw new BadRequestException(
-          'Wkt obrigatório para o tipo Detecção Parcial ',
-        );
-      }
-    })
+    if (parsedBody.poligonos) {
+      parsedBody.poligonos.forEach((p) => {
+        if (p.tipoDeteccao == 2 && (p.wkt == null || p.wkt == '')) {
+          throw new BadRequestException(
+            'Wkt obrigatório para o tipo Detecção Parcial ',
+          );
+        }
+      });
+    }
 
     if (!arquivos || arquivos.length === 0) {
       throw new BadRequestException(
