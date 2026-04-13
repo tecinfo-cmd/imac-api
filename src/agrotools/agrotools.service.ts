@@ -1050,6 +1050,9 @@ export class AgrotoolsService {
       where: {
         id: idAnalise,
         erroAgrotools: IsNull(),
+        deteccoes: {
+          tipoDeteccao: Not(IsNull()),
+        },
       },
       relations: ['deteccoes', 'documentos'],
     });
