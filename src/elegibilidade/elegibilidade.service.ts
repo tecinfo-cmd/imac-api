@@ -32,6 +32,12 @@ import { PagamentoAprovadoTemplate } from '../email/templates/pagamento-aprovado
 import { PagamentoRecusadoTemplate } from '../email/templates/pagamento-recusado.template';
 import { Propriedade } from '../propriedade-prem/entities/propriedade.entity';
 import { MensagemService } from '../message/mensagem.service';
+import { FiltrosPesquisa, RequestCarDto } from './dto/request-car-dto';
+import {
+  ConsultaCarResponse,
+  ItensCarResponse,
+} from './dto/consulta-car-response';
+import { ProprietarioConsulta } from './entities/consulta/proprietario-consulta.entity';
 
 @Injectable()
 export class ElegibilidadeService {
@@ -286,19 +292,23 @@ export class ElegibilidadeService {
     const propriedadeConsultas: Array<PropriedadeConsulta> = [];
     this.validaDados(cpf, cnpj, carEstadual);
     if (cpf != null && cpf != '') {
-      const request = new ConsultaSimRequest(cpf, 1);
-      const car = await this.encontrarCAR(request);
-      await this.inserePropriedadeConsulta(
-        car.simcarDados,
+      const filtro = new FiltrosPesquisa(null, cpf, null);
+      const request = new RequestCarDto(filtro);
+      const car = await this.consultaCar(request);
+      await this.buscarOuInserirPropriedadeConsulta(
+        car.Itens,
         propriedadeConsultas,
+        cnpj,
       );
     }
     if (cnpj != null && cnpj != '') {
-      const request = new ConsultaSimRequest(cnpj, 2);
-      const car = await this.encontrarCAR(request);
-      await this.inserePropriedadeConsulta(
-        car.simcarDados,
+      const filtro = new FiltrosPesquisa(cnpj);
+      const request = new RequestCarDto(filtro);
+      const car = await this.consultaCar(request);
+      await this.buscarOuInserirPropriedadeConsulta(
+        car.Itens,
         propriedadeConsultas,
+        cnpj,
       );
     }
     if (carEstadual != null && carEstadual != '') {
@@ -309,10 +319,10 @@ export class ElegibilidadeService {
           relations: ['cidade'],
         });
 
-      if (propriedadeConsulta) {
+      if (propriedadeConsulta && propriedadeConsulta.proprietarios) {
         propriedadeConsulta.proprietariosConsulta = JSON.parse(
           propriedadeConsulta.proprietarios,
-        );
+        ) as ProprietarioConsulta[];
         propriedadeConsultas.push(
           plainToInstance(PropriedadeConsulta, propriedadeConsulta),
         );
@@ -355,6 +365,18 @@ export class ElegibilidadeService {
     const url = process.env.URL_WEBSCRAPER as string;
     const { data } = await firstValueFrom(
       this.httpService.post<SimCardDados>(url, request).pipe(
+        catchError((error: AxiosError) => {
+          throw new BadRequestException(JSON.stringify(error?.response?.data));
+        }),
+      ),
+    );
+    return data;
+  }
+
+  async consultaCar(request: RequestCarDto): Promise<ConsultaCarResponse> {
+    const url = process.env.URL_CONSULTA_CAR as string;
+    const { data } = await firstValueFrom(
+      this.httpService.post<ConsultaCarResponse>(url, request).pipe(
         catchError((error: AxiosError) => {
           throw new BadRequestException(JSON.stringify(error?.response?.data));
         }),
@@ -568,5 +590,39 @@ export class ElegibilidadeService {
     return this.solicitacaoElegibilidadeRepository.save(
       solicitacaoElegibilidade,
     );
+  }
+
+  async buscarOuInserirPropriedadeConsulta(
+    carResponses: ItensCarResponse[],
+    propriedadeConsultas: PropriedadeConsulta[],
+    cpfCnpj?: string | null,
+  ) {
+    for (const c of carResponses) {
+      const propriedadeConsulta =
+        await this.propriedadeConsultaRepository.findOneBy({
+          carEstadual: c.NumeroReciboFedederal,
+        });
+      if (propriedadeConsulta) {
+        propriedadeConsultas.push(propriedadeConsulta);
+      } else {
+        let proprietarios: string = '';
+        if (cpfCnpj) {
+          proprietarios = JSON.stringify([
+            { cpfCnpj: cpfCnpj, nome: c.PropriedadeNome },
+          ]);
+        }
+        const propConsulta = {
+          carFederal: c.NumeroReciboFedederal,
+          carEstadual: c.NumeroCompleto,
+          nomePropriedade: c.PropriedadeNome,
+          proprietarios:
+            proprietarios.length > 0 ? proprietarios : 'SEM_INFORMACAO',
+        } as PropriedadeConsulta;
+
+        const entity =
+          await this.propriedadeConsultaRepository.save(propConsulta);
+        propriedadeConsultas.push(entity);
+      }
+    }
   }
 }

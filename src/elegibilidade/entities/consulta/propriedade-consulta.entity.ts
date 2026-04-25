@@ -1,16 +1,21 @@
 import { Exclude, Transform } from 'class-transformer';
-import { Column, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
+import {
+  Column,
+  Entity,
+  JoinColumn,
+  ManyToOne,
+  PrimaryGeneratedColumn,
+} from 'typeorm';
 import { Cidade } from '../cidade.entity';
 import { ProprietarioConsulta } from './proprietario-consulta.entity';
 import { ApiProperty } from '@nestjs/swagger';
 
-
 @Entity({ schema: 'IMAC', name: 'TB_PROPRIEDADES_CONSULTA' })
 export class PropriedadeConsulta {
   @PrimaryGeneratedColumn({
-    name: 'ID'
+    name: 'ID',
   })
-  id: number;
+  id?: number;
 
   @ApiProperty()
   @Column({
@@ -18,7 +23,9 @@ export class PropriedadeConsulta {
     length: 43,
     unique: true,
   })
-  @Transform(({ value }: { value: string }) => value?.replace(/[.]/g, ''), { toClassOnly: true })
+  @Transform(({ value }: { value: string }) => value?.replace(/[.]/g, ''), {
+    toClassOnly: true,
+  })
   carFederal: string;
 
   @ApiProperty()
@@ -35,19 +42,18 @@ export class PropriedadeConsulta {
     spatialFeatureType: 'Polygon',
     srid: 4326,
   })
-  geometry: string;
+  geometry?: string;
 
   @ApiProperty()
   @Column({ name: 'MODULO_FISCAL', type: 'numeric', precision: 10, scale: 2 })
-  moduloFiscal: number;
+  moduloFiscal?: number;
 
   @ApiProperty()
-  proprietariosConsulta: ProprietarioConsulta[];
+  proprietariosConsulta?: ProprietarioConsulta[];
 
   @Exclude()
-  @Column({ name: 'DESC_PROPRIETARIOS'})
-  proprietarios: string;
-
+  @Column({ name: 'DESC_PROPRIETARIOS' })
+  proprietarios?: string;
 
   @Column({ name: 'CODIGO_MUNICIPIO' })
   codigoMunicipio?: number;
@@ -55,17 +61,13 @@ export class PropriedadeConsulta {
   @ApiProperty()
   @ManyToOne(() => Cidade)
   @JoinColumn({ name: 'CODIGO_MUNICIPIO', referencedColumnName: 'codigo' })
-  cidade: Cidade;
+  cidade?: Cidade;
 
   @Exclude()
   @Column({ name: 'DATA_CRIACAO', default: () => 'CURRENT_TIMESTAMP' })
-  dataCriacao: string;
+  dataCriacao?: string;
 
   @Exclude()
   @Column({ name: 'DATA_ATUALIZACAO', default: () => 'CURRENT_TIMESTAMP' })
-  dataAtualizacao: string;
-
-
-
-
+  dataAtualizacao?: string;
 }
