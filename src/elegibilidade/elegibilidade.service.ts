@@ -298,7 +298,7 @@ export class ElegibilidadeService {
       await this.buscarOuInserirPropriedadeConsulta(
         car.Itens,
         propriedadeConsultas,
-        cnpj,
+        cpf,
       );
     }
     if (cnpj != null && cnpj != '') {
@@ -378,6 +378,7 @@ export class ElegibilidadeService {
     const { data } = await firstValueFrom(
       this.httpService.post<ConsultaCarResponse>(url, request).pipe(
         catchError((error: AxiosError) => {
+          console.log('ERRO AO CONSULTA API CAR');
           throw new BadRequestException(JSON.stringify(error?.response?.data));
         }),
       ),
