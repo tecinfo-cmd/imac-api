@@ -138,7 +138,7 @@ export class ElegibilidadeController {
   @ApiResponse({
     status: 200,
     description:
-      'Consulta um car baseado no cpf, cnpj ou numero do car estatual.',
+      'Consulta car baseado no cpf, cnpj ou numero do car estatual.',
     type: PropriedadeConsulta,
   })
   @ApiResponse({ status: 403, description: 'Forbidden.' })

@@ -884,7 +884,16 @@ export class AgrotoolsService {
     propriedadeConsulta: PropriedadeConsulta,
     solicitacaoElegibilidade: SolicitacaoElegibilidade,
   ) {
-    const props = JSON.parse(propriedadeConsulta.proprietarios);
+    let props;
+    if (propriedadeConsulta.proprietarios) {
+      props = JSON.parse(propriedadeConsulta.proprietarios);
+    } else {
+      props = {
+        cpfCnpj: solicitacaoElegibilidade.cpfCnpj,
+        nome: solicitacaoElegibilidade.nomePropriedade,
+      };
+    }
+
     const pessoa = await this.pessoaService.buscaOuCadastra(
       solicitacaoElegibilidade,
       props,
@@ -958,13 +967,13 @@ export class AgrotoolsService {
   async consultaUsuarioAnalista(): Promise<Usuario> {
     const sql = `select u."EMAIL" email, count(tp."ID_USUARIO_ANALISTA") qtd
                  from "IMAC"."TB_USUARIOS" u
-                          inner join "IMAC"."TB_USUARIO_ROLE" tur on tur."ID_USUARIO" = u."ID"
-                          left join "IMAC"."TB_PROPRIEDADES" tp on u."ID" = tp."ID_USUARIO_ANALISTA"
+                        inner join "IMAC"."TB_USUARIO_ROLE" tur on tur."ID_USUARIO" = u."ID"
+                        left join "IMAC"."TB_PROPRIEDADES" tp on u."ID" = tp."ID_USUARIO_ANALISTA"
                  where tur."ID_ROLE" = 2
                    and u."STATUS" != 'INATIVO'
                  group by u."EMAIL"
                  order by qtd asc
-                     limit 1;`;
+                   limit 1;`;
     const dados = await this.entityManager.query(sql);
     return await this.usuarioService.buscarUsuarioPorEmail(dados[0].email);
   }
@@ -1050,6 +1059,9 @@ export class AgrotoolsService {
       where: {
         id: idAnalise,
         erroAgrotools: IsNull(),
+        deteccoes: {
+          tipoDeteccao: Not(IsNull()),
+        },
       },
       relations: ['deteccoes', 'documentos'],
     });

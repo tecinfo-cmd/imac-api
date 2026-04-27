@@ -14,9 +14,6 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { plainToInstance } from 'class-transformer';
 import { HttpService } from '@nestjs/axios';
 import { catchError, firstValueFrom } from 'rxjs';
-import { AxiosError } from 'axios';
-import { ConsultaSimRequest } from './dto/consulta-sim-request';
-import { SimCardDados } from './dto/simcard-dados-response';
 import { Simcard } from './dto/simcard-response';
 import { EmailService } from '../email/email.service';
 import * as process from 'process';
@@ -32,6 +29,9 @@ import { PagamentoAprovadoTemplate } from '../email/templates/pagamento-aprovado
 import { PagamentoRecusadoTemplate } from '../email/templates/pagamento-recusado.template';
 import { Propriedade } from '../propriedade-prem/entities/propriedade.entity';
 import { MensagemService } from '../message/mensagem.service';
+import { RequestCarDto } from './dto/request-car-dto';
+import { ItensResponse, PropriedadeDto } from './dto/consulta-car-response';
+import { ProprietarioConsulta } from './entities/consulta/proprietario-consulta.entity';
 
 @Injectable()
 export class ElegibilidadeService {
@@ -286,19 +286,21 @@ export class ElegibilidadeService {
     const propriedadeConsultas: Array<PropriedadeConsulta> = [];
     this.validaDados(cpf, cnpj, carEstadual);
     if (cpf != null && cpf != '') {
-      const request = new ConsultaSimRequest(cpf, 1);
-      const car = await this.encontrarCAR(request);
-      await this.inserePropriedadeConsulta(
-        car.simcarDados,
+      const filtro = new RequestCarDto(null, cpf, null);
+      const car = await this.consultaCar(filtro);
+      await this.buscarOuInserirPropriedadeConsulta(
+        car.itens,
         propriedadeConsultas,
+        cpf,
       );
     }
     if (cnpj != null && cnpj != '') {
-      const request = new ConsultaSimRequest(cnpj, 2);
-      const car = await this.encontrarCAR(request);
-      await this.inserePropriedadeConsulta(
-        car.simcarDados,
+      const filtro = new RequestCarDto(cnpj);
+      const car = await this.consultaCar(filtro);
+      await this.buscarOuInserirPropriedadeConsulta(
+        car.itens,
         propriedadeConsultas,
+        cnpj,
       );
     }
     if (carEstadual != null && carEstadual != '') {
@@ -309,10 +311,10 @@ export class ElegibilidadeService {
           relations: ['cidade'],
         });
 
-      if (propriedadeConsulta) {
+      if (propriedadeConsulta && propriedadeConsulta.proprietarios) {
         propriedadeConsulta.proprietariosConsulta = JSON.parse(
           propriedadeConsulta.proprietarios,
-        );
+        ) as ProprietarioConsulta[];
         propriedadeConsultas.push(
           plainToInstance(PropriedadeConsulta, propriedadeConsulta),
         );
@@ -351,15 +353,32 @@ export class ElegibilidadeService {
     }
   }
 
-  async encontrarCAR(request: ConsultaSimRequest): Promise<SimCardDados> {
-    const url = process.env.URL_WEBSCRAPER as string;
+  /**
+   *
+   * @param request
+   */
+  async consultaCar(request: RequestCarDto): Promise<PropriedadeDto> {
+    const url = process.env.URL_CONSULTA_CAR as string;
+    const headersRequest = {
+      'X-Api-Key': `${process.env.KEY_CONSULTA_CAR as string}`,
+      'Content-Type': 'application/json',
+    };
+
     const { data } = await firstValueFrom(
-      this.httpService.post<SimCardDados>(url, request).pipe(
-        catchError((error: AxiosError) => {
-          throw new BadRequestException(JSON.stringify(error?.response?.data));
-        }),
-      ),
+      this.httpService
+        .get<PropriedadeDto>(
+          `${url}/consulta?cpf=${request.cpf}&cnpj=${request.cnpj}`,
+          {
+            headers: headersRequest,
+          },
+        )
+        .pipe(
+          catchError((error: any) => {
+            throw new NegocioException(error, 'Erro ao consulta car');
+          }),
+        ),
     );
+
     return data;
   }
 
@@ -568,5 +587,39 @@ export class ElegibilidadeService {
     return this.solicitacaoElegibilidadeRepository.save(
       solicitacaoElegibilidade,
     );
+  }
+
+  async buscarOuInserirPropriedadeConsulta(
+    carResponses: ItensResponse[],
+    propriedadeConsultas: PropriedadeConsulta[],
+    cpfCnpj?: string | null,
+  ) {
+    for (const c of carResponses) {
+      const propriedadeConsulta =
+        await this.propriedadeConsultaRepository.findOneBy({
+          carEstadual: c.numeroReciboFedederal,
+        });
+      if (propriedadeConsulta) {
+        propriedadeConsultas.push(propriedadeConsulta);
+      } else {
+        let proprietarios: string = '';
+        if (cpfCnpj) {
+          proprietarios = JSON.stringify([
+            { cpfCnpj: cpfCnpj, nome: c.propriedadeNome },
+          ]);
+        }
+        const propConsulta = {
+          carFederal: c.numeroReciboFedederal,
+          carEstadual: c.numeroCompleto,
+          nomePropriedade: c.propriedadeNome,
+          proprietarios:
+            proprietarios.length > 0 ? proprietarios : 'SEM_INFORMACAO',
+        } as PropriedadeConsulta;
+
+        const entity =
+          await this.propriedadeConsultaRepository.save(propConsulta);
+        propriedadeConsultas.push(entity);
+      }
+    }
   }
 }

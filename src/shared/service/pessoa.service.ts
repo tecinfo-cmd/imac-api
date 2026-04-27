@@ -10,18 +10,17 @@ import { ProprietarioConsulta } from '../../elegibilidade/entities/consulta/prop
 
 @Injectable()
 export class PessoaService {
-
   constructor(
     @InjectRepository(Pessoa)
-    private pessoaRepository: Repository<Pessoa>
-  ){}
+    private pessoaRepository: Repository<Pessoa>,
+  ) {}
 
   async salvaPessoa(pessoa: Pessoa): Promise<Pessoa> {
     return await this.pessoaRepository.save(pessoa);
   }
 
   async buscaPessoaEmail(email: string): Promise<Pessoa> {
-    const pessoa = await this.pessoaRepository.findOne({ where: { email }});
+    const pessoa = await this.pessoaRepository.findOne({ where: { email } });
     if (!pessoa) {
       throw new NotFoundException('Pessoa não encontrado');
     }
@@ -29,7 +28,7 @@ export class PessoaService {
   }
 
   async buscaPessoaEmailCadastro(email: string): Promise<Pessoa | null> {
-    const pessoa = await this.pessoaRepository.findOne({ where: { email }});
+    const pessoa = await this.pessoaRepository.findOne({ where: { email } });
     if (!pessoa) {
       return null;
     }
@@ -37,46 +36,61 @@ export class PessoaService {
   }
 
   async buscaPessoaId(id: number): Promise<Pessoa> {
-    const pessoa = await this.pessoaRepository.findOne({ where: { id }});
+    const pessoa = await this.pessoaRepository.findOne({ where: { id } });
     if (!pessoa) {
       throw new NotFoundException('Pessoa não encontrado');
     }
     return pessoa;
   }
 
-  async atualizarPessoa(pessoa: Pessoa){
-    await this.pessoaRepository.update(pessoa.id, pessoa)
+  async atualizarPessoa(pessoa: Pessoa) {
+    await this.pessoaRepository.update(pessoa.id, pessoa);
   }
 
-  async buscaOuCadastra(solicitacao: SolicitacaoElegibilidade, proprietarios: ProprietarioConsulta[]): Promise<Pessoa> {
+  async buscaOuCadastra(
+    solicitacao: SolicitacaoElegibilidade,
+    proprietarios: ProprietarioConsulta[],
+  ): Promise<Pessoa> {
     const email = solicitacao.email;
-    const pessoa = await this.pessoaRepository.findOne({ where: { email }});
+    const pessoa = await this.pessoaRepository.findOne({ where: { email } });
     if (!pessoa) {
-        const proprietario = proprietarios.find(p=> solicitacao.cpfCnpj.includes(p.cpfCnpj.replace("XXX",'')
-          .replace("XX",'')))
-        if(!proprietario){
-          const pessoaCadastro = {cpf: solicitacao.cpfCnpj, email: email, nome: solicitacao.email.split('@')[0] }
-          return await this.pessoaRepository.save(pessoaCadastro);
-        }else{
-          const pessoaCadastro = {cpf: solicitacao.cpfCnpj, email: email, nome: proprietario?.nome }
-          return await this.pessoaRepository.save(pessoaCadastro);
-        }
-
+      const proprietario = proprietarios.find((p) =>
+        solicitacao.cpfCnpj.includes(
+          p.cpfCnpj.replace('XXX', '').replace('XX', ''),
+        ),
+      );
+      if (!proprietario) {
+        const pessoaCadastro = {
+          cpf: solicitacao.cpfCnpj,
+          email: email,
+          nome: solicitacao.email.split('@')[0],
+        };
+        return await this.pessoaRepository.save(pessoaCadastro);
+      } else {
+        const pessoaCadastro = {
+          cpf: solicitacao.cpfCnpj,
+          email: email,
+          nome: proprietario?.nome,
+        };
+        return await this.pessoaRepository.save(pessoaCadastro);
+      }
     }
     return pessoa;
   }
 
-
-  async buscaOuCadastraPessoa(solicitacao: SolicitacaoElegibilidade): Promise<Pessoa> {
+  async buscaOuCadastraPessoa(
+    solicitacao: SolicitacaoElegibilidade,
+  ): Promise<Pessoa> {
     const email = solicitacao.email;
-    const pessoa = await this.pessoaRepository.findOne({ where: { email }});
+    const pessoa = await this.pessoaRepository.findOne({ where: { email } });
     if (!pessoa) {
-      const pessoaCadastro = {cpf: solicitacao.cpfCnpj, email: email, nome: email.split('@')[0]}
+      const pessoaCadastro = {
+        cpf: solicitacao.cpfCnpj,
+        email: email,
+        nome: email.split('@')[0],
+      };
       return await this.pessoaRepository.save(pessoaCadastro);
     }
     return pessoa;
   }
-
-
-
 }

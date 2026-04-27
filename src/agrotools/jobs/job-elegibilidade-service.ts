@@ -46,7 +46,7 @@ export class JobElegibilidadeService {
     this.agroToolsService.verificaContestacoesAnalise();
   }
 
-  @Cron('0 */3 * * * *')
+  @Cron('0 */4 * * * *')
   verificaPlanosAdequacao() {
     this.agroToolsService.verificaPlanosAdequacao();
   }
