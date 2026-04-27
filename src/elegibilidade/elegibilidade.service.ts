@@ -358,7 +358,7 @@ export class ElegibilidadeService {
    * @param request
    */
   async consultaCar(request: RequestCarDto): Promise<PropriedadeDto> {
-    const url = process.env.URL_CONSULTA_CAR as string;
+    const urlConsulta = this.getUrlConsulta(request);
     const headersRequest = {
       'X-Api-Key': `${process.env.KEY_CONSULTA_CAR as string}`,
       'Content-Type': 'application/json',
@@ -366,12 +366,9 @@ export class ElegibilidadeService {
 
     const { data } = await firstValueFrom(
       this.httpService
-        .get<PropriedadeDto>(
-          `${url}/consulta?cpf=${request.cpf}&cnpj=${request.cnpj}`,
-          {
-            headers: headersRequest,
-          },
-        )
+        .get<PropriedadeDto>(`${urlConsulta}`, {
+          headers: headersRequest,
+        })
         .pipe(
           catchError((error: any) => {
             throw new NegocioException(error, 'Erro ao consulta car');
@@ -380,6 +377,15 @@ export class ElegibilidadeService {
     );
 
     return data;
+  }
+
+  private getUrlConsulta(request: RequestCarDto) {
+    const url = process.env.URL_CONSULTA_CAR as string;
+    if (request.cpf) {
+      return `${url}/consulta?cnpf=${request.cpf}`;
+    } else {
+      return `${url}/consulta?cpf=${request.cnpj}`;
+    }
   }
 
   private async enviarEmailDeConfirmacaoDeSolicitacao(
