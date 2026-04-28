@@ -1,13 +1,14 @@
 import {
-  Controller,
-  Get,
-  Post,
   Body,
-  Patch,
-  Param,
+  Controller,
   Delete,
+  Get,
+  Param,
+  Patch,
+  Post,
+  Put,
+  Query,
   UseGuards,
-  Query, Put,
 } from '@nestjs/common';
 import { UpdateUsuarioDto } from './dto/update-usuario.dto';
 import { ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
@@ -25,10 +26,13 @@ import { createSwaggerPaginatedResponseDto } from '../shared/dto/swagger-paginat
 @UseGuards(JwtAuthGuard)
 @Controller('usuario')
 export class UsuarioController {
-  constructor(private readonly usuarioService: UsuarioService) { }
+  constructor(private readonly usuarioService: UsuarioService) {}
 
-
-  @ApiResponse({ status: 200, description: 'Usuario criado com sucesso.', type: UsuarioResponse })
+  @ApiResponse({
+    status: 200,
+    description: 'Usuario criado com sucesso.',
+    type: UsuarioResponse,
+  })
   @ApiResponse({ status: 403, description: 'Forbidden.' })
   @Post()
   criarUsuario(@Body() createUsuarioDto: UsuarioRequest) {
@@ -36,22 +40,43 @@ export class UsuarioController {
   }
 
   @Get('listar')
-  @ApiResponse({ status: 200, description: 'Listar usuários', type: createSwaggerPaginatedResponseDto(ListarUsuarioResponse) })
+  @ApiResponse({
+    status: 200,
+    description: 'Listar usuários',
+    type: createSwaggerPaginatedResponseDto(ListarUsuarioResponse),
+  })
   @ApiQuery({ name: 'email', required: false })
   @ApiQuery({ name: 'nome', required: false })
   @ApiQuery({ name: 'status', enum: StatusUsuario, required: false })
   @ApiQuery({ name: 'perfil', required: false })
-  @ApiQuery({ name: 'page', required: false, type: Number, description: 'Número da página' })
-  @ApiQuery({ name: 'size', required: false, type: Number, description: 'Tamanho da página' })
+  @ApiQuery({
+    name: 'page',
+    required: false,
+    type: Number,
+    description: 'Número da página',
+  })
+  @ApiQuery({
+    name: 'size',
+    required: false,
+    type: Number,
+    description: 'Tamanho da página',
+  })
   async listarPorFiltro(
     @Query('email') email?: string,
     @Query('nome') nome?: string,
     @Query('status') status?: StatusUsuario,
     @Query('perfil') perfil?: string,
     @Query('page') page = 1,
-    @Query('size') size = 10
+    @Query('size') size = 10,
   ): Promise<PaginatedResponseInterface<ListarUsuarioResponse>> {
-    return await this.usuarioService.listarPaginado(email, nome, status, perfil, page, size);
+    return await this.usuarioService.listarPaginado(
+      email,
+      nome,
+      status,
+      perfil,
+      page,
+      size,
+    );
   }
 
   @Get('email/:email')
@@ -61,7 +86,11 @@ export class UsuarioController {
 
   @Get('buscar-por-id/:id')
   async buscarUsuarioPorId(@Param('id') id: number): Promise<UsuarioResponse> {
-    const data = plainToInstance(UsuarioResponse, this.usuarioService.buscarUsuarioPorId(id), { excludeExtraneousValues: true });
+    const data = plainToInstance(
+      UsuarioResponse,
+      this.usuarioService.buscarUsuarioPorId(id),
+      { excludeExtraneousValues: true },
+    );
     return data;
   }
 
@@ -79,7 +108,9 @@ export class UsuarioController {
   }
 
   @Put('redistribuir/:id')
-  async redistribuir(@Param('id') id: number): Promise<PaginatedResponseInterface<ListarUsuarioResponse>> {
-    return  await this.usuarioService.redistribuirPropriedadeAnalista(id);
+  async redistribuir(
+    @Param('id') id: number,
+  ): Promise<PaginatedResponseInterface<ListarUsuarioResponse>> {
+    return await this.usuarioService.redistribuirPropriedadeAnalista(id);
   }
 }

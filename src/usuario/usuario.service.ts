@@ -1,4 +1,9 @@
-import { forwardRef, Inject, Injectable, NotFoundException } from '@nestjs/common';
+import {
+  forwardRef,
+  Inject,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { EntityManager, Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Cargo } from './dto/create-usuario.dto';
@@ -40,18 +45,24 @@ export class UsuarioService {
     private readonly entityManager: EntityManager,
     @InjectRepository(Propriedade)
     private readonly propriedadeRepository: Repository<Propriedade>,
-  ) {
-  }
+  ) {}
 
-  async   criarUsuario(data: UsuarioRequest): Promise<UsuarioResponse> {
+  async criarUsuario(data: UsuarioRequest): Promise<UsuarioResponse> {
     try {
-
       await this.validaEmailExistente(data.email);
 
-      let pessoa = await this.pessoaService.buscaPessoaEmailCadastro(data.email);
+      let pessoa = await this.pessoaService.buscaPessoaEmailCadastro(
+        data.email,
+      );
 
       if (!pessoa) {
-        const p = { cpfCnpj: data.cpf, telefone: data?.telefone, nome: data.nome, email: data.email, tipoPessoa: data.tipo } as Pessoa;
+        const p = {
+          cpfCnpj: data.cpf,
+          telefone: data?.telefone,
+          nome: data.nome,
+          email: data.email,
+          tipoPessoa: data.tipo,
+        } as Pessoa;
         pessoa = await this.pessoaService.salvaPessoa(p);
       }
 
@@ -80,11 +91,13 @@ export class UsuarioService {
     } catch (error) {
       throw new NegocioException(error.statusCode, error.message);
     }
-
   }
 
   async buscaUSuarioPorEmail(email: string): Promise<Usuario> {
-    const usuario = await this.usuarioRepository.findOne({ where: { email }, relations: ['pessoa'] });
+    const usuario = await this.usuarioRepository.findOne({
+      where: { email },
+      relations: ['pessoa'],
+    });
     if (!usuario) {
       throw new NotFoundException('Usuario não encontrado');
     }
@@ -92,7 +105,10 @@ export class UsuarioService {
   }
 
   async buscarUsuarioPorEmail(email: string): Promise<Usuario> {
-    const usuario = await this.usuarioRepository.findOne({ where: { email }, relations: ['pessoa', 'roles', 'frigorifico'] });
+    const usuario = await this.usuarioRepository.findOne({
+      where: { email },
+      relations: ['pessoa', 'roles', 'frigorifico'],
+    });
     if (!usuario) {
       throw new NotFoundException('Usuario não encontrado');
     }
@@ -100,7 +116,10 @@ export class UsuarioService {
   }
 
   async buscarUsuarioPorId(id: number): Promise<Usuario> {
-    const usuario = await this.usuarioRepository.findOne({ where: { id }, relations: ['pessoa'] });
+    const usuario = await this.usuarioRepository.findOne({
+      where: { id },
+      relations: ['pessoa'],
+    });
     if (!usuario) {
       throw new NotFoundException('Usuario não encontrado');
     }
@@ -112,7 +131,8 @@ export class UsuarioService {
     nome?: string,
     status?: StatusUsuario,
   ): Promise<Usuario[]> {
-    const query = this.usuarioRepository.createQueryBuilder('usuario')
+    const query = this.usuarioRepository
+      .createQueryBuilder('usuario')
       .leftJoinAndSelect('usuario.pessoa', 'pessoa');
 
     if (email) {
@@ -138,16 +158,21 @@ export class UsuarioService {
     page = 1,
     size = 10,
   ): Promise<PaginatedResponseInterface<ListarUsuarioResponse>> {
-    const query = this.usuarioRepository.createQueryBuilder('usuario')
+    const query = this.usuarioRepository
+      .createQueryBuilder('usuario')
       .leftJoinAndSelect('usuario.pessoa', 'pessoa')
       .leftJoinAndSelect('usuario.roles', 'roles');
 
     if (email) {
-      query.andWhere('LOWER(usuario.email) LIKE :email', { email: `%${email}%` });
+      query.andWhere('LOWER(usuario.email) LIKE :email', {
+        email: `%${email}%`,
+      });
     }
 
     if (nome) {
-      query.andWhere('LOWER(unaccent(pessoa.nome)) LIKE :nome', { nome: `%${nome}%` });
+      query.andWhere('LOWER(unaccent(pessoa.nome)) LIKE :nome', {
+        nome: `%${nome}%`,
+      });
     }
 
     if (status) {
@@ -155,38 +180,44 @@ export class UsuarioService {
     }
 
     if (role) {
-      query.andWhere('LOWER(roles.nome) LIKE :nomeRole', { nomeRole: `%${role.toLowerCase()}%` });
+      query.andWhere('LOWER(roles.nome) LIKE :nomeRole', {
+        nomeRole: `%${role.toLowerCase()}%`,
+      });
     }
 
     query.skip((page - 1) * size).take(size);
 
     const [result, total] = await query.getManyAndCount();
 
-    const usuariosAnalistas = await this.consultaQuantidadePropriedade()
-    result.forEach(usuario => {
-     usuariosAnalistas.forEach((analista) => {
-       if(usuario.email == analista.email) {
-         usuario.quantidadePropriedade = analista.quantidade;
-         usuario.usuarioAnalista = "SIM";
-       }
-     })
-    })
+    const usuariosAnalistas = await this.consultaQuantidadePropriedade();
+    result.forEach((usuario) => {
+      usuariosAnalistas.forEach((analista) => {
+        if (usuario.email == analista.email) {
+          usuario.quantidadePropriedade = analista.quantidade;
+          usuario.usuarioAnalista = 'SIM';
+        }
+      });
+    });
 
-    const data = plainToInstance(ListarUsuarioResponse, result, { excludeExtraneousValues: true });
+    const data = plainToInstance(ListarUsuarioResponse, result, {
+      excludeExtraneousValues: true,
+    });
     return { data, total, page, size };
   }
 
   async atualizarUsuario(id: number, data: UpdateUsuarioDto): Promise<Usuario> {
-
     const updatedUsuario = await this.usuarioRepository.findOne({
-      where: { id }, relations: ['pessoa'],
+      where: { id },
+      relations: ['pessoa'],
     });
 
     if (!updatedUsuario) {
       throw new NotFoundException('Usuário não encontrado.');
     }
 
-    let pessoa = await this.pessoaService.buscaPessoaEmail(updatedUsuario.email);
+    let pessoa = await this.pessoaService.buscaPessoaEmail(
+      updatedUsuario.email,
+    );
     if (pessoa && data.telefone) {
       pessoa.telefone = data.telefone;
       await this.pessoaService.atualizarPessoa(pessoa);
@@ -210,7 +241,6 @@ export class UsuarioService {
     updatedUsuario.status = data.status;
     await this.usuarioRepository.save(updatedUsuario);
 
-
     return updatedUsuario;
   }
 
@@ -231,7 +261,8 @@ export class UsuarioService {
   }
 
   async consultarUsuariosCadastroAgrotools() {
-    const query = this.usuarioRepository.createQueryBuilder('usuario')
+    const query = this.usuarioRepository
+      .createQueryBuilder('usuario')
       .leftJoinAndSelect('usuario.pessoa', 'pessoa')
       .where('pessoa.idUsuarioAgrotools IS NULL')
       .andWhere(`usuario.erroIntegracao IS NULL`);
@@ -239,15 +270,23 @@ export class UsuarioService {
     return await query.getMany();
   }
 
-  async criarUsuarioFrigorifico(data: UsuarioFrigoficoRequest, idFrigorifico: number): Promise<UsuarioResponse> {
+  async criarUsuarioFrigorifico(
+    data: UsuarioFrigoficoRequest,
+    idFrigorifico: number,
+  ): Promise<UsuarioResponse> {
     try {
-
       await this.validaEmailExistente(data.email);
 
-      let pessoa = await this.pessoaService.buscaPessoaEmailCadastro(data.email);
+      let pessoa = await this.pessoaService.buscaPessoaEmailCadastro(
+        data.email,
+      );
 
       if (!pessoa) {
-        const p = { cpfCnpj: data.cpf.replace(/[^\d]/g, ''), nome: data.nome, email: data.email } as Pessoa;
+        const p = {
+          cpfCnpj: data.cpf.replace(/[^\d]/g, ''),
+          nome: data.nome,
+          email: data.email,
+        } as Pessoa;
         pessoa = await this.pessoaService.salvaPessoa(p);
       }
 
@@ -256,7 +295,7 @@ export class UsuarioService {
         pessoa: pessoa,
         status: StatusUsuario.ATIVO,
         cargo: Cargo.FRIGORIFICO,
-        roles: [{id: 4, nome: Cargo.FRIGORIFICO }],
+        roles: [{ id: 4, nome: Cargo.FRIGORIFICO }],
         idFrigorifico: idFrigorifico,
       });
 
@@ -278,29 +317,36 @@ export class UsuarioService {
     } catch (error) {
       throw new NegocioException(error.statusCode, error);
     }
-
   }
 
-  async ativarInativarUsuarioFrigorifico(idFrigorifico: number, status: StatusUsuario) {
-
-    await this.usuarioRepository.createQueryBuilder()
+  async ativarInativarUsuarioFrigorifico(
+    idFrigorifico: number,
+    status: StatusUsuario,
+  ) {
+    await this.usuarioRepository
+      .createQueryBuilder()
       .update(Usuario)
       .set({ status: status })
       .where('idFrigorifico = :idFrigorifico', { idFrigorifico: idFrigorifico })
       .execute();
   }
 
-  async atualizarUsuarioFrigorifico(id: number, data: UpdateUsuarioFrigorifico): Promise<Usuario> {
-
+  async atualizarUsuarioFrigorifico(
+    id: number,
+    data: UpdateUsuarioFrigorifico,
+  ): Promise<Usuario> {
     const updatedUsuario = await this.usuarioRepository.findOne({
-      where: { id }, relations: ['pessoa'],
+      where: { id },
+      relations: ['pessoa'],
     });
 
     if (!updatedUsuario) {
       throw new NotFoundException('Usuário não encontrado.');
     }
 
-    let pessoa = await this.pessoaService.buscaPessoaEmail(updatedUsuario.email);
+    let pessoa = await this.pessoaService.buscaPessoaEmail(
+      updatedUsuario.email,
+    );
     if (pessoa) {
       pessoa.nome = data.nome;
       await this.pessoaService.atualizarPessoa(pessoa);
@@ -309,15 +355,23 @@ export class UsuarioService {
     return await this.usuarioRepository.save(updatedUsuario);
   }
 
-  async  criarProdutorFrigorifico(data: ProdutorFrigoficoRequest): Promise<UsuarioResponse> {
+  async criarProdutorFrigorifico(
+    data: ProdutorFrigoficoRequest,
+  ): Promise<UsuarioResponse> {
     try {
-
       await this.validaEmailExistente(data.email);
 
-      let pessoa = await this.pessoaService.buscaPessoaEmailCadastro(data.email);
+      let pessoa = await this.pessoaService.buscaPessoaEmailCadastro(
+        data.email,
+      );
 
       if (!pessoa) {
-        const p = { cpfCnpj: data.cpf, nome: data.nome, email: data.email, telefone: data.telefone } as Pessoa;
+        const p = {
+          cpfCnpj: data.cpf,
+          nome: data.nome,
+          email: data.email,
+          telefone: data.telefone,
+        } as Pessoa;
         pessoa = await this.pessoaService.salvaPessoa(p);
       }
 
@@ -326,7 +380,7 @@ export class UsuarioService {
         pessoa: pessoa,
         status: StatusUsuario.ATIVO,
         cargo: Cargo.PRODUTOR,
-        roles: [{id: 3, nome: Cargo.PRODUTOR}],
+        roles: [{ id: 3, nome: Cargo.PRODUTOR }],
       });
 
       const usuarioSave = await this.usuarioRepository.save(usuario);
@@ -344,19 +398,25 @@ export class UsuarioService {
         address: {
           zipCode: usuario.cep ? usuario.cep : '78048250',
           number: usuario.numero ? usuario.cep : '525',
-          complement: usuario.logradouro ? usuario.cep : 'Av. Dr. Hélio Ribeiro, 525 - Sala 701',
+          complement: usuario.logradouro
+            ? usuario.cep
+            : 'Av. Dr. Hélio Ribeiro, 525 - Sala 701',
         } as EnderecoProdutorAgrotools,
       } as ProdutorAgrotools;
 
-      const response = await this.agrotoolsService.consultarUsuarioCadastrado(usuario.pessoa.email);
+      const response = await this.agrotoolsService.consultarUsuarioCadastrado(
+        usuario.pessoa.email,
+      );
 
       if (response) {
         pessoa.idUsuarioAgrotools = response.idUser ?? response.userId;
         await this.pessoaService.salvaPessoa(pessoa);
       } else {
-        const produtorResponse = await this.agrotoolsService.cadastrarProdutorJob(produtorAgortols);
+        const produtorResponse =
+          await this.agrotoolsService.cadastrarProdutorJob(produtorAgortols);
         if (produtorResponse) {
-          pessoa.idUsuarioAgrotools = produtorResponse.idUser ?? produtorResponse.userId;
+          pessoa.idUsuarioAgrotools =
+            produtorResponse.idUser ?? produtorResponse.userId;
           await this.pessoaService.salvaPessoa(pessoa);
         }
       }
@@ -377,9 +437,11 @@ export class UsuarioService {
 
   async validaEmailExistente(email: string) {
     if (email) {
-      const usuarioExiste = await this.usuarioRepository.findOneBy({ email: email });
+      const usuarioExiste = await this.usuarioRepository.findOneBy({
+        email: email,
+      });
       if (usuarioExiste) {
-        throw new NegocioException(422,'Email já cadastrado');
+        throw new NegocioException(422, 'Email já cadastrado');
       }
     }
   }
@@ -388,57 +450,54 @@ export class UsuarioService {
     await this.usuarioRepository.save(usuario);
   }
 
-  async consultaQuantidadePropriedade(): Promise<AnalistaDto[]>{
+  async consultaQuantidadePropriedade(): Promise<AnalistaDto[]> {
     const sql = `select u."EMAIL" email, count(tp."ID_USUARIO_ANALISTA") quantidade
                  from "IMAC"."TB_USUARIOS" u
-                          inner join "IMAC"."TB_USUARIO_ROLE" tur on tur."ID_USUARIO" = u."ID"
-                          left join "IMAC"."TB_PROPRIEDADES" tp on u."ID" = tp."ID_USUARIO_ANALISTA"
+                        inner join "IMAC"."TB_USUARIO_ROLE" tur on tur."ID_USUARIO" = u."ID"
+                        left join "IMAC"."TB_PROPRIEDADES" tp on u."ID" = tp."ID_USUARIO_ANALISTA"
                  where tur."ID_ROLE" = 2
                    and u."STATUS" != 'INATIVO'
                  group by u."EMAIL", u."STATUS"
-                 order by quantidade asc;`
-    return await this.entityManager.query(sql)
-
+                 order by quantidade asc;`;
+    return await this.entityManager.query(sql);
   }
 
-  async consultaAnalista(): Promise<AnalistaDto>{
+  async consultaAnalista(): Promise<AnalistaDto> {
     const sql = `select u."EMAIL" email, count(tp."ID_USUARIO_ANALISTA") quantidade, u."ID" as id
                  from "IMAC"."TB_USUARIOS" u
-                          inner join "IMAC"."TB_USUARIO_ROLE" tur on tur."ID_USUARIO" = u."ID"
-                          left join "IMAC"."TB_PROPRIEDADES" tp on u."ID" = tp."ID_USUARIO_ANALISTA"
+                        inner join "IMAC"."TB_USUARIO_ROLE" tur on tur."ID_USUARIO" = u."ID"
+                        left join "IMAC"."TB_PROPRIEDADES" tp on u."ID" = tp."ID_USUARIO_ANALISTA"
                  where tur."ID_ROLE" = 2
                    and u."STATUS" != 'INATIVO'
                  group by u."EMAIL", u."STATUS", u."ID"
                  order by quantidade asc
-                     limit 1;
-    ;`
-    return await this.entityManager.query(sql)
-
+                   limit 1;
+    ;`;
+    return await this.entityManager.query(sql);
   }
 
-  async redistribuirPropriedadeAnalista(id: number){
-    const usuario =  await this.usuarioRepository.findOneBy({ id: id });
-    if(usuario?.status == StatusUsuario.ATIVO){
-      throw new NegocioException(422,"Usuario encontra-se ativo")
+  async redistribuirPropriedadeAnalista(id: number) {
+    const usuario = await this.usuarioRepository.findOneBy({ id: id });
+    if (usuario?.status == StatusUsuario.ATIVO) {
+      throw new NegocioException(422, 'Usuario encontra-se ativo');
     }
 
     const propriedades = await this.propriedadeRepository.find({
       relations: ['analista'],
-      where: { analista: { id: id}},
-    })
+      where: { analista: { id: id } },
+    });
 
-    for(const prop of propriedades) {
+    for (const prop of propriedades) {
       const analista = await this.consultaAnalista();
-      const analistaVinculo = await this.usuarioRepository.findOneBy({ id: analista[0].id });
-      if(analistaVinculo){
+      const analistaVinculo = await this.usuarioRepository.findOneBy({
+        id: analista[0].id,
+      });
+      if (analistaVinculo) {
         prop.analista = analistaVinculo;
         await this.propriedadeRepository.save(prop);
       }
     }
 
     return this.listarPaginado();
-
-
   }
-
 }

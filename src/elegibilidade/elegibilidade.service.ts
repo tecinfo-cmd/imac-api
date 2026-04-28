@@ -286,7 +286,7 @@ export class ElegibilidadeService {
     const propriedadeConsultas: Array<PropriedadeConsulta> = [];
     this.validaDados(cpf, cnpj, carEstadual);
     if (cpf != null && cpf != '') {
-      const filtro = new RequestCarDto(null, cpf, null);
+      const filtro = new RequestCarDto(cpf, null, null);
       const car = await this.consultaCar(filtro);
       await this.buscarOuInserirPropriedadeConsulta(
         car.itens,
@@ -295,7 +295,7 @@ export class ElegibilidadeService {
       );
     }
     if (cnpj != null && cnpj != '') {
-      const filtro = new RequestCarDto(cnpj);
+      const filtro = new RequestCarDto(null, cnpj, null);
       const car = await this.consultaCar(filtro);
       await this.buscarOuInserirPropriedadeConsulta(
         car.itens,
@@ -371,7 +371,7 @@ export class ElegibilidadeService {
         })
         .pipe(
           catchError((error: any) => {
-            throw new NegocioException(error, 'Erro ao consulta car');
+            throw new NegocioException(error, error?.response?.data?.message);
           }),
         ),
     );
@@ -382,9 +382,9 @@ export class ElegibilidadeService {
   private getUrlConsulta(request: RequestCarDto) {
     const url = process.env.URL_CONSULTA_CAR as string;
     if (request.cpf) {
-      return `${url}/consulta?cnpf=${request.cpf}`;
+      return `${url}/consulta?cpf=${request.cpf}`;
     } else {
-      return `${url}/consulta?cpf=${request.cnpj}`;
+      return `${url}/consulta?cnpj=${request.cnpj}`;
     }
   }
 
