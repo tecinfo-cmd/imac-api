@@ -41,7 +41,7 @@ export class JobElegibilidadeService {
     this.agroToolsService.verificaAnalise();
   }
 
-  @Cron('0 */3 * * * *')
+  @Cron('0 */1 * * * *')
   verificaContestacoesAnalise() {
     this.agroToolsService.verificaContestacoesAnalise();
   }
@@ -67,7 +67,7 @@ export class JobElegibilidadeService {
   }
 
   //CONFIRMAÇÃO PAGAMENTOS MULTA E VOUCHER MOCK
-  @Cron('0 */10 * * * *')
+  @Cron('0 */2 * * * *')
   validaPagamentoVoucherMock() {
     if (this.ambiente == 'development') {
       this.cobrancaService.verificaConfirmacaoPagamentoVoucherMock();
