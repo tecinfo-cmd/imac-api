@@ -67,7 +67,7 @@ export class JobElegibilidadeService {
   }
 
   //CONFIRMAÇÃO PAGAMENTOS MULTA E VOUCHER MOCK
-  @Cron('0 */2 * * * *')
+  @Cron('0 */4 * * * *')
   validaPagamentoVoucherMock() {
     if (this.ambiente == 'development') {
       this.cobrancaService.verificaConfirmacaoPagamentoVoucherMock();
@@ -75,7 +75,7 @@ export class JobElegibilidadeService {
   }
 
   //CONFIRMAÇÃO PAGAMENTOS MULTA E VOUCHER MOCK
-  @Cron('0 */4 * * * *')
+  @Cron('0 */5 * * * *')
   validaPagamentoMultasMock() {
     if (this.ambiente == 'development') {
       this.cobrancaService.verificaConfirmacaoPagamentoMultaMock();
