@@ -474,7 +474,7 @@ export class AnaliseSocioambientalService {
     const emailProprietario = analiseSocioambiental.propriedade?.proprietarios[0].pessoa.email;
     const proprietario = analiseSocioambiental.propriedade?.proprietarios[0].pessoa.nome;
     const telefone = analiseSocioambiental.propriedade?.proprietarios[0].pessoa.telefone;
-    const analise = 'Analise SocioAmbiental paracer: ' + statusValidosParaParecer;
+    const analise = 'Analise SocioAmbiental'
 
     const dados = {
       produtor: proprietario, propriedade: analiseSocioambiental.propriedade?.nomePropriedade,
@@ -565,7 +565,7 @@ export class AnaliseSocioambientalService {
     const emailProprietario = analiseSocioambiental.propriedade?.proprietarios[0].pessoa.email;
     const proprietario = analiseSocioambiental.propriedade?.proprietarios[0].pessoa.nome;
     const telefone = analiseSocioambiental.propriedade?.proprietarios[0].pessoa.telefone;
-    const analise = 'Analise SocioAmbiental paracer: ' + statusValidosParaParecer;
+    const analise = 'Plano de Adequação : ';
 
     const dados = {
       produtor: proprietario, propriedade: analiseSocioambiental.propriedade?.nomePropriedade,
