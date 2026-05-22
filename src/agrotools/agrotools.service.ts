@@ -61,6 +61,7 @@ import { ImagemTerritorio } from './request/planoAdequacao/imagem-territorio';
 import { AutoVistoriaRespnse } from './response/auto-vistoria-respnse';
 import { UsuarioResponse } from '../usuario/response/usuario-response';
 import { Usuario } from '../usuario/entities/usuario.entity';
+import { AgentsRequest } from './request/agents-request';
 
 @Injectable()
 export class AgrotoolsService {
@@ -1420,12 +1421,7 @@ export class AgrotoolsService {
                 producersId: proprietarios.map(
                   (p) => p.pessoa.idUsuarioAgrotools,
                 ),
-                agents: [
-                  {
-                    name: propriedade.proprietarios[0].pessoa.nome,
-                    document: propriedade.proprietarios[0].pessoa.cpfCnpj,
-                  },
-                ],
+                agents: this.getAgents(propriedade.proprietarios),
               } as TerritorioAgrotoolsRequest;
               try {
                 territorioResponse = await this.criarTerritorio(territorio);
@@ -1440,6 +1436,19 @@ export class AgrotoolsService {
         }
       }
     }
+  }
+
+  getAgents(proprietarios: Proprietario[]): AgentsRequest[] {
+    const agents: AgentsRequest[] = [];
+    if (proprietarios.length > 1) {
+      agents.push(
+        {
+          name: proprietarios[1].pessoa.nome,
+          document: proprietarios[1].pessoa.cpfCnpj,
+        },
+      );
+    }
+    return agents;
   }
 
   async salvaTerritorio(
