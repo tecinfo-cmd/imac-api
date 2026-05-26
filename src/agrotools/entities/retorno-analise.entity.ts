@@ -20,14 +20,17 @@ import { ContestacaoLaudo } from '../../propriedade-prem/analise-socioambiental/
 import { PlanoAdequacao } from '../../propriedade-prem/analise-socioambiental/entities/plano-adequacao.entity';
 import { Documento } from '../../shared/entity/documento.entity';
 
-@Entity({ schema: 'IMAC', name: 'TB_RETORNO_ANALISE',  orderBy: {
-    id: "DESC",
-  } })
+@Entity({
+  schema: 'IMAC',
+  name: 'TB_RETORNO_ANALISE',
+  orderBy: {
+    id: 'DESC',
+  },
+})
 export class RetornoAnaliseEntity {
-
   @Expose()
   @PrimaryGeneratedColumn({
-    name: 'ID'
+    name: 'ID',
   })
   @Expose()
   id: number;
@@ -51,7 +54,13 @@ export class RetornoAnaliseEntity {
 
   @Expose()
   @ApiProperty()
-  @Column({ name: 'AREA_A_REGENERAR', type: 'decimal', precision: 10, scale: 2, default: 0.0 })
+  @Column({
+    name: 'AREA_A_REGENERAR',
+    type: 'decimal',
+    precision: 10,
+    scale: 2,
+    default: 0.0,
+  })
   areaARegenerar?: number;
 
   @Expose()
@@ -74,42 +83,59 @@ export class RetornoAnaliseEntity {
     type: DeteccoesAnaliseEntity,
     isArray: true,
   })
-  @OneToMany(() => DeteccoesAnaliseEntity, (deteccoes) => deteccoes.retornoAnalises,{ cascade: ['insert', 'update']})
+  @OneToMany(
+    () => DeteccoesAnaliseEntity,
+    (deteccoes) => deteccoes.retornoAnalises,
+    { cascade: ['insert', 'update'] },
+  )
   deteccoes: DeteccoesAnaliseEntity[];
 
   @Expose()
   @ApiProperty()
-  @OneToOne(() => ContestacaoAutorizacaoSupressao, (contestacao) => contestacao.analiseSocioambiental)
+  @OneToOne(
+    () => ContestacaoAutorizacaoSupressao,
+    (contestacao) => contestacao.analiseSocioambiental,
+  )
   contestacaoAutorizacaoSupressao?: ContestacaoAutorizacaoSupressao;
 
   @Expose()
   @ApiProperty()
-  @OneToOne(() => ContestacaoLaudo, (contestacao) => contestacao.analiseSocioambiental)
+  @OneToOne(
+    () => ContestacaoLaudo,
+    (contestacao) => contestacao.analiseSocioambiental,
+  )
   contestacaoLaudo?: ContestacaoLaudo;
 
   @Expose()
   @ApiProperty()
-  @OneToOne(() => PlanoAdequacao, (planoAdequacao) => planoAdequacao.analiseSocioambiental)
+  @OneToOne(
+    () => PlanoAdequacao,
+    (planoAdequacao) => planoAdequacao.analiseSocioambiental,
+  )
   planoAdequacao?: PlanoAdequacao;
 
   @Expose()
   @ApiProperty()
-  @ManyToMany(() => Documento, { cascade: true})
-  @JoinTable(
-    {
-      name: 'TB_DOCUMENTOS_RETORNOS_ANALISE',
-      joinColumn: { name: 'ID_RETORNO_ANALISE' },
-      inverseJoinColumn: { name: 'ID_DOCUMENTO' }
-    }
-  )
+  @ManyToMany(() => Documento, { cascade: true })
+  @JoinTable({
+    name: 'TB_DOCUMENTOS_RETORNOS_ANALISE',
+    joinColumn: { name: 'ID_RETORNO_ANALISE' },
+    inverseJoinColumn: { name: 'ID_DOCUMENTO' },
+  })
   documentos?: Documento[];
 
   @Expose()
-  @CreateDateColumn({ name: 'DATA_CRIACAO', default: () => 'CURRENT_TIMESTAMP' })
+  @CreateDateColumn({
+    name: 'DATA_CRIACAO',
+    default: () => 'CURRENT_TIMESTAMP',
+  })
   dataCriacao: string;
 
   @Expose()
-  @UpdateDateColumn({ name: 'DATA_ATUALIZACAO', default: () => 'CURRENT_TIMESTAMP' })
+  @UpdateDateColumn({
+    name: 'DATA_ATUALIZACAO',
+    default: () => 'CURRENT_TIMESTAMP',
+  })
   dataAtualizacao: string;
 
   @ApiProperty()
@@ -120,6 +146,4 @@ export class RetornoAnaliseEntity {
   @ApiProperty()
   @Column({ name: 'ERRO_AGROTOOLS' })
   erroAgrotools: string;
-
-
 }

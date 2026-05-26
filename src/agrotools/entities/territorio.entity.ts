@@ -43,8 +43,18 @@ export class TerritorioEntity {
 
   @Expose()
   @ApiProperty()
+  @Column({name: 'IMAGEM_ELEGIBILIDADE'})
+  imagemElegibilidade: string;
+
+  @Expose()
+  @ApiProperty()
   @Column({name: 'IMAGEM_ADEQUACAO'})
   imagemAdequacao: string;
+
+  @Expose()
+  @ApiProperty()
+  @Column({name: 'IMAGEM_CONTESTACAO'})
+  imagemContestacao: string;
 
   @Expose()
   @ApiProperty()

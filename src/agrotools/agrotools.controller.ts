@@ -14,8 +14,6 @@ import { ValidarConsultaQueryDto } from '../elegibilidade/dto/validar-consulta-q
 import { JwtAuthGuard } from '../shared/guards/jwt.guard';
 import { AnaliseRequest } from './request/analise-request';
 import { RetornoAnaliseEntity } from './entities/retorno-analise.entity';
-import { plainToInstance } from 'class-transformer';
-import { TerritorioResponse } from './response/territorio/territorio-response';
 
 @ApiTags('Integração Agrotools')
 @Controller('/agrotools')
@@ -79,7 +77,7 @@ export class AgrotoolsController {
     );
   }
 
-  @UseGuards(JwtAuthGuard)
+  /* @UseGuards(JwtAuthGuard)
   @Get('/plano-adequacao/gerar-imagem')
   @ApiResponse({
     status: 200,
@@ -94,7 +92,7 @@ export class AgrotoolsController {
     return plainToInstance(TerritorioResponse, territorio, {
       excludeExtraneousValues: true,
     });
-  }
+  }*/
 
   @UseGuards(JwtAuthGuard)
   @Post('/contestacao')

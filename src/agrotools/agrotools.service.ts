@@ -52,7 +52,6 @@ import { RetornoPlanoAdequacao } from './response/planoAdequacao/retorno-plano-a
 import { FormularioVistoriaResponse } from '../propriedade-prem/auto-vistoria/response/formulario-vistoria-response';
 import { PlanoAdequacao } from '../propriedade-prem/analise-socioambiental/entities/plano-adequacao.entity';
 import { ItensPlanoAdequacao } from './request/planoAdequacao/itens-plano-adequacao';
-import { ImagemPlano } from './request/planoAdequacao/imagem-plano';
 import { ContestacaoRequest } from './request/planoAdequacao/contestacao-request';
 import { DocumentoContestacao } from './request/planoAdequacao/documento-contestacao';
 import { RetornoAdequacao } from './response/planoAdequacao/retorno-adequacao';
@@ -62,6 +61,7 @@ import { AutoVistoriaRespnse } from './response/auto-vistoria-respnse';
 import { UsuarioResponse } from '../usuario/response/usuario-response';
 import { Usuario } from '../usuario/entities/usuario.entity';
 import { AgentsRequest } from './request/agents-request';
+import { ImagemPlano } from './request/planoAdequacao/imagem-plano';
 
 @Injectable()
 export class AgrotoolsService {
@@ -177,35 +177,36 @@ export class AgrotoolsService {
   async cadastrarProdutor(
     produtorAgrotools: ProdutorAgrotools,
   ): Promise<ProdutorAgrotoolsResponse> {
-    return await axios
-      .post(`${this.url}/Person`, produtorAgrotools, {
-        headers: this.headersRequest,
-      })
-      .then((res) => {
-        return res.data;
-      })
-      .catch((error) => {
-        throw new NegocioException(error.status, this.getErroAgrotools(error));
-      });
-  }
+    try {
+      const { data } = await axios.post<ProdutorAgrotoolsResponse>(
+        `${this.url}/Person`,
+        produtorAgrotools,
+        { headers: this.headersRequest },
+      );
 
+      return data;
+    } catch (error: any) {
+      const statusCode = error.response?.status || error.status || 500;
+      throw new NegocioException(statusCode, this.getErroAgrotools(error));
+    }
+  }
   /**
    *
    * @param id
    */
-  async consultarTerritorio(id: number): Promise<TerritorioResponse> {
+  async consultarTerritorio(id: number): Promise<TerritorioResponse | null> {
     const codigo = id.toString();
 
-    return await axios
-      .get(`${this.url}/Territory/get-by-ownercode/${codigo}`, {
-        headers: this.headersRequest,
-      })
-      .then((res) => {
-        return res.data;
-      })
-      .catch((error) => {
-        return null;
-      });
+    try {
+      const { data } = await axios.get<TerritorioResponse>(
+        `${this.url}/Territory/get-by-ownercode/${codigo}`,
+        { headers: this.headersRequest },
+      );
+
+      return data;
+    } catch (error) {
+      return null;
+    }
   }
 
   /**
@@ -215,16 +216,18 @@ export class AgrotoolsService {
   async cadastrarProdutorJob(
     produtorAgrotools: ProdutorAgrotools,
   ): Promise<ProdutorAgrotoolsResponse> {
-    return await axios
-      .post(`${this.url}/Person`, produtorAgrotools, {
-        headers: this.headersRequest,
-      })
-      .then((res) => {
-        return res.data;
-      })
-      .catch((error) => {
-        throw new NegocioException(error.status, this.getErroAgrotools(error));
-      });
+    try {
+      const { data } = await axios.post<ProdutorAgrotoolsResponse>(
+        `${this.url}/Person`,
+        produtorAgrotools,
+        { headers: this.headersRequest },
+      );
+
+      return data;
+    } catch (error: any) {
+      const statusCode = error.response?.status || error.status || 500;
+      throw new NegocioException(statusCode, this.getErroAgrotools(error));
+    }
   }
 
   /**
@@ -371,94 +374,10 @@ export class AgrotoolsService {
     return data;
   }
 
-  /**
-   *
-   * @param codigoTerritory
+  /***
+   *SETAR IMAGEM PLANO DE ADEQUAÇÃO
    */
-  async retornaImagemPlano(codigoTerritory: string): Promise<TerritorioEntity> {
-    const territorio = await this.territorioRepository.findOne({
-      where: {
-        codigoTerritorio: codigoTerritory,
-      },
-    });
-
-    if (!territorio) {
-      throw new NegocioException(404, 'Territor não encontrado');
-    }
-
-    const data: ImagemPlano = await axios
-      .post(`${this.url}/AdequancyPlan/generate-image/${codigoTerritory}`, {
-        headers: this.headersRequest,
-      })
-      .then((res) => {
-        return res.data;
-      })
-      .catch((error) => {
-        throw new NegocioException(error.status, error?.response.data.message);
-      });
-    if (data) {
-      const documento = await this.documentoUploadService.uploadBase64Image(
-        data.base64Image,
-      );
-      territorio.imagemAdequacao = documento.url;
-      await this.territorioRepository.update(territorio.id, territorio);
-
-      return territorio;
-    }
-
-    return territorio;
-  }
-
-  async retornaImagemPlanoJob(
-    codigoTerritory: string,
-    hashImagem?: string,
-  ): Promise<TerritorioEntity | null> {
-    const territorio = await this.territorioRepository.findOne({
-      where: {
-        codigoTerritorio: codigoTerritory,
-      },
-    });
-
-    if (!territorio) {
-      throw new NegocioException(404, 'Territor não encontrado');
-    }
-
-    const data: ImagemPlano = await axios
-      .post(`${this.url}/AdequancyPlan/generate-image/${codigoTerritory}`, {
-        headers: this.headersRequest,
-      })
-      .then((res) => {
-        return res.data;
-      })
-      .catch((error) => {
-        console.log(this.getErroAgrotools(error));
-      });
-
-    if (data) {
-      const hashImagemAgrotools = createHash('sha256')
-        .update(data.base64Image)
-        .digest('hex');
-
-      if (hashImagem === hashImagemAgrotools) {
-        return null;
-      }
-
-      const documento = await this.documentoUploadService.uploadBase64Image(
-        data.base64Image,
-      );
-      territorio.hashImagem = hashImagemAgrotools;
-      territorio.imagemAdequacao = documento.url;
-      territorio.statusImagem = 'ATUALIZADA';
-      await this.territorioRepository.update(territorio.id, territorio);
-
-      return territorio;
-    }
-
-    return null;
-  }
-
-  //TODO: Da para juntar as funções elas se repetem na maior parte
-  async retornaImagemTerritorio(codigoTerritory: string, hashImagem?: string) {
+  async retornaImagemPlanoAdequacao(codigoTerritory: string) {
     const territorio = await this.territorioRepository.findOne({
       where: {
         codigoTerritorio: codigoTerritory,
@@ -481,18 +400,11 @@ export class AgrotoolsService {
       });
 
     if (data) {
-      const hashImagemAgrotools = createHash('sha256')
-        .update(data.base64Image)
-        .digest('hex');
-
-      if (hashImagem === hashImagemAgrotools) {
-        return null;
-      }
 
       const documento = await this.documentoUploadService.uploadBase64Image(
         data.base64Image,
       );
-      territorio.hashImagem = hashImagemAgrotools;
+
       territorio.imagemAdequacao = documento.url;
       territorio.statusImagem = 'ATUALIZADA';
       await this.territorioRepository.update(territorio.id, territorio);
@@ -647,8 +559,7 @@ export class AgrotoolsService {
           dataAtualizacao: moment(new Date()).format('DD-MMM-YYYY HH:mm:ss'),
         } as RetornoAnaliseEntity;
 
-        // Validar se seria melhor local
-        await this.retornaImagemTerritorio(request.cdTerritory);
+        // await this.retornaImagemTerritorio(request.cdTerritory);
         return await this.retornoAnaliseRepository.save(retornoAnalise);
       } else {
         throw new BadRequestException('Consulta não disponivel.');
@@ -1154,10 +1065,7 @@ export class AgrotoolsService {
     await Promise.allSettled(
       AnalisesSalvasSemImagem.flatMap((analise) => {
         return analise.propriedade?.territorios.map((territorio) =>
-          this.retornaImagemTerritorio(
-            territorio.codigoTerritorio,
-            territorio.hashImagem,
-          ),
+          this.retornaImagemAnalise(territorio.codigoTerritorio),
         );
       }),
     );
@@ -1170,7 +1078,7 @@ export class AgrotoolsService {
           contestacaoId: Not(IsNull()),
           propriedade: {
             territorios: {
-              statusImagem: Equal('ATUALIZAR'),
+              imagemContestacao: IsNull(),
             },
           },
           planoAdequacao: {
@@ -1188,10 +1096,7 @@ export class AgrotoolsService {
     await Promise.allSettled(
       contestacoesAnalisesSalvasSemImagem.flatMap((analise) => {
         return analise.propriedade?.territorios.map((territorio) =>
-          this.retornaImagemTerritorio(
-            territorio.codigoTerritorio,
-            territorio.hashImagem,
-          ),
+          this.retornaImagemContestacao(territorio.codigoTerritorio),
         );
       }),
     );
@@ -1234,7 +1139,7 @@ export class AgrotoolsService {
           analiseSocioambiental: {
             propriedade: {
               territorios: {
-                statusImagem: Equal('ATUALIZAR'),
+                imagemAdequacao: IsNull(),
               },
             },
           },
@@ -1250,7 +1155,7 @@ export class AgrotoolsService {
       planosAdequacaoSalvasSemImagem.flatMap((plano) => {
         return plano.analiseSocioambiental.propriedade?.territorios.map(
           (territorio) =>
-            this.retornaImagemPlanoJob(territorio.codigoTerritorio),
+            this.retornaImagemPlanoAdequacao(territorio.codigoTerritorio),
         );
       }),
     );
@@ -1467,41 +1372,6 @@ export class AgrotoolsService {
     await this.territorioRepository.save(territorioEntity);
   }
 
-  //TODO METODO TEMPORARIO
-  async atualizaImagem() {
-    const territorios = await this.territorioRepository.find({
-      where: {
-        statusImagem: IsNull(),
-      },
-    });
-
-    if (territorios) {
-      for (const territorio of territorios) {
-        const data: ImagemPlano = await axios
-          .post(
-            `${this.url}/AdequancyPlan/generate-image/${territorio.codigoTerritorio}`,
-            { headers: this.headersRequest },
-          )
-          .then((res) => {
-            return res.data;
-          })
-          .catch(async (error) => {
-            territorio.statusImagem = this.getErroAgrotools(error);
-            await this.territorioRepository.update(territorio.id, territorio);
-            return null;
-          });
-        if (data) {
-          const documento = await this.documentoUploadService.uploadBase64Image(
-            data.base64Image,
-          );
-          territorio.imagemAdequacao = documento.url;
-          territorio.statusImagem = 'ATUALIZADA';
-          await this.territorioRepository.update(territorio.id, territorio);
-        }
-      }
-    }
-  }
-
   getErroAgrotools(error: any): string {
     if (error.response.data.Message) {
       return 'Erro Agrotools: ' + error.response.data.Message;
@@ -1524,5 +1394,77 @@ export class AgrotoolsService {
       WHERE "ID" = $2;
     `;
     await this.entityManager.query(rawSql, [erroAgrotoos, id]);
+  }
+
+  async retornaImagemContestacao(
+    codigoTerritory: string,
+  ): Promise<TerritorioEntity | null> {
+    const territorio = await this.territorioRepository.findOne({
+      where: { codigoTerritorio: codigoTerritory },
+    });
+
+    if (!territorio) {
+      throw new NegocioException(404, 'Território não encontrado');
+    }
+
+    try {
+      const { data } = await axios.post<ImagemPlano>(
+        `${this.url}/AdequancyPlan/generate-image/${codigoTerritory}`,
+        {},
+        { headers: this.headersRequest },
+      );
+
+      if (data?.base64Image) {
+        const documento = await this.documentoUploadService.uploadBase64Image(
+          data.base64Image,
+        );
+
+        territorio.imagemContestacao = documento.url;
+        territorio.statusImagem = 'ATUALIZADA';
+
+        await this.territorioRepository.update(territorio.id, territorio);
+        return territorio;
+      }
+    } catch (error) {
+      console.log(this.getErroAgrotools(error));
+    }
+
+    return null;
+  }
+
+  async retornaImagemAnalise(
+    codigoTerritory: string,
+  ): Promise<TerritorioEntity | null> {
+    const territorio = await this.territorioRepository.findOne({
+      where: { codigoTerritorio: codigoTerritory },
+    });
+
+    if (!territorio) {
+      throw new NegocioException(404, 'Território não encontrado');
+    }
+
+    try {
+      const { data } = await axios.post<ImagemPlano>(
+        `${this.url}/AdequancyPlan/generate-image/${codigoTerritory}`,
+        {},
+        { headers: this.headersRequest },
+      );
+
+      if (data?.base64Image) {
+        const documento = await this.documentoUploadService.uploadBase64Image(
+          data.base64Image,
+        );
+
+        territorio.imagemElegibilidade = documento.url;
+        territorio.statusImagem = 'ATUALIZADA';
+
+        await this.territorioRepository.update(territorio.id, territorio);
+        return territorio;
+      }
+    } catch (error) {
+      console.log(this.getErroAgrotools(error));
+    }
+
+    return null;
   }
 }
