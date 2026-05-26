@@ -16,7 +16,6 @@ import { TokenRedefinicaoSenha } from '../../auth/entities/token-redefinicao-sen
 import { UsuarioTipo } from '../enums/usuario-tipo';
 import { Role } from '../../role/entities/role.entity';
 import { ApiProperty } from '@nestjs/swagger';
-import { Cidade } from '../../elegibilidade/entities/cidade.entity';
 import { Frigorifico } from '../../frigorico/entities/frigorifico.entity';
 
 @Entity({ schema: 'IMAC', name: 'TB_USUARIOS' })
@@ -27,7 +26,7 @@ export class Usuario {
   @Expose()
   id: number;
 
-  @ApiProperty()  
+  @ApiProperty()
   @Expose()
   @OneToOne(() => Pessoa)
   @JoinColumn({ name: 'ID_PESSOA' })
@@ -80,7 +79,7 @@ export class Usuario {
   @Column({
     type: 'enum',
     enum: StatusUsuario,
-    name: 'STATUS'
+    name: 'STATUS',
   })
   status?: StatusUsuario;
 
@@ -101,12 +100,12 @@ export class Usuario {
   @Column({
     type: 'enum',
     enum: UsuarioTipo,
-    name: 'TIPO'
+    name: 'TIPO',
   })
   tipo?: UsuarioTipo;
 
   @ApiProperty()
-  @Column({name: "ID_FRIGORIFICO"})
+  @Column({ name: 'ID_FRIGORIFICO' })
   idFrigorifico: number;
 
   @Column({ name: 'ERRO_INTEGRACAO' })
@@ -117,6 +116,5 @@ export class Usuario {
   frigorifico: Frigorifico;
 
   quantidadePropriedade?: number;
-  usuarioAnalista?:  string;
-
+  usuarioAnalista?: string;
 }

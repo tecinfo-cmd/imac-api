@@ -176,7 +176,7 @@ export class CobrancasService {
       linhaDigitavel: boleto.linhaDigitavel,
       txId: boleto.txid,
       posto: boleto.posto,
-      dataVencimento: await this.getDataVencimento(1),
+      dataVencimento: this.getDataVencimento(1),
       valor: request.valor,
     };
     const pagamentoSave =
@@ -227,7 +227,10 @@ export class CobrancasService {
       (p) => p.pessoa.cpfCnpj == request.boleto.pagador.documento,
     );
     if (!proprietario) {
-      //throw new NegocioException(HttpStatus.NOT_FOUND, 'Pagador diferente do proprietario da unidade');
+      throw new NegocioException(
+        HttpStatus.NOT_FOUND,
+        'Pagador diferente do proprietario da unidade',
+      );
     }
 
     try {
@@ -279,7 +282,7 @@ export class CobrancasService {
     }
 
     this.headers.Authorization = await this.autenticacao();
-    const dataVencimento = { dataVencimento: await this.getDataVencimento(1) };
+    const dataVencimento = { dataVencimento: this.getDataVencimento(1) };
 
     const { data } = await firstValueFrom(
       this.httpService
@@ -503,7 +506,7 @@ export class CobrancasService {
     boleto.codigoBeneficiario = this.codigoBeneficiario;
     boleto.beneficiarioFinal = this.beneficiario;
     boleto.valor = valor;
-    boleto.dataVencimento = await this.getDataVencimento(1);
+    boleto.dataVencimento = this.getDataVencimento(1);
     boleto.mensagens = this.mensagemBoleto;
     boleto.tipoCobranca = TipoPagamento.HIBRIDO;
     boleto.especieDocumento = EspecieDocumento.DUPLICATA;
@@ -534,7 +537,7 @@ export class CobrancasService {
     boleto.codigoBeneficiario = this.codigoBeneficiario;
     boleto.beneficiarioFinal = this.beneficiario;
     boleto.valor = valor;
-    boleto.dataVencimento = await this.getDataVencimentoMes(parcela);
+    boleto.dataVencimento = this.getDataVencimentoMes(parcela);
     boleto.mensagens = this.mensagemBoleto;
     boleto.tipoCobranca = TipoPagamento.HIBRIDO;
     boleto.especieDocumento = EspecieDocumento.DUPLICATA;
@@ -649,6 +652,7 @@ export class CobrancasService {
             await this.elegibilidadeService.enviarConfirmacaoPagamento(
               pagamento.solicitacaoElegibilidade.email,
               pagamento.solicitacaoElegibilidade.carFederal,
+              propriedade.nomePropriedade,
             );
           }
         }
@@ -701,6 +705,7 @@ export class CobrancasService {
     await this.elegibilidadeService.enviarConfirmacaoPagamento(
       pag.solicitacaoElegibilidade.email,
       pag.solicitacaoElegibilidade.carFederal,
+      propriedade.nomePropriedade,
     );
   }
 
@@ -742,13 +747,13 @@ export class CobrancasService {
     });
   }
 
-  async getDataVencimento(dias: number): Promise<string> {
+  getDataVencimento(dias: number): string {
     const vencimento = new Date();
     vencimento.setDate(vencimento.getDate() + dias);
     return moment(vencimento).format('YYYY-MM-DD');
   }
 
-  async getDataVencimentoMes(mes: number): Promise<string> {
+  getDataVencimentoMes(mes: number): string {
     const vencimento = new Date();
     vencimento.setMonth(vencimento.getMonth() + mes);
     return moment(vencimento).format('YYYY-MM-DD');
@@ -855,6 +860,7 @@ export class CobrancasService {
                 await this.elegibilidadeService.enviarConfirmacaoPagamento(
                   pagamento.solicitacaoElegibilidade.email,
                   pagamento.solicitacaoElegibilidade.carFederal,
+                  propriedade.nomePropriedade,
                 );
               }
             }

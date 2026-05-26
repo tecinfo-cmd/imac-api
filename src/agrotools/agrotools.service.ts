@@ -115,7 +115,7 @@ export class AgrotoolsService {
 
       return data;
     } catch (error) {
-      throw new NegocioException(error.status, this.getErroAgrotools(error));
+      throw new NegocioException(error?.status, this.getErroAgrotools(error));
     }
   }
 
@@ -830,7 +830,7 @@ export class AgrotoolsService {
         return res.data;
       })
       .catch((error) => {
-        throw new NegocioException(error.status, this.getErroAgrotools(error));
+        throw new NegocioException(error?.status, this.getErroAgrotools(error));
       });
   }
 
@@ -1441,12 +1441,12 @@ export class AgrotoolsService {
   getAgents(proprietarios: Proprietario[]): AgentsRequest[] {
     const agents: AgentsRequest[] = [];
     if (proprietarios.length > 1) {
-      agents.push(
-        {
-          name: proprietarios[1].pessoa.nome,
-          document: proprietarios[1].pessoa.cpfCnpj,
-        },
-      );
+      proprietarios.forEach((proprietario) => {
+        agents.push({
+          name: proprietario.pessoa.nome,
+          document: proprietario.pessoa.cpfCnpj,
+        });
+      });
     }
     return agents;
   }

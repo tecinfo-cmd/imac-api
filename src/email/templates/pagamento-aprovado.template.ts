@@ -1,15 +1,16 @@
-import { BaseTemplate } from "./base-template";
+import { BaseTemplate } from './base-template';
 import * as process from 'process';
 
-interface EmailData{
-    car: string;
+interface EmailData {
+  car: string;
+  nomePropriedade: string;
 }
 
 const gerarUrl = () => `${process.env.URL_BASE_FRONTEND}/auth`;
 
-export class PagamentoAprovadoTemplate extends BaseTemplate<EmailData>{
-    generate(): string {
-        return `<!DOCTYPE html>
+export class PagamentoAprovadoTemplate extends BaseTemplate<EmailData> {
+  generate(): string {
+    return `<!DOCTYPE html>
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
@@ -173,7 +174,8 @@ export class PagamentoAprovadoTemplate extends BaseTemplate<EmailData>{
                             <img id="icon" src="https://imac-image.nyc3.digitaloceanspaces.com/public/check-circle.png" alt="icone de verificado">
                             <h3>Pagamento aprovado!</h3>
                         </div>
-                        <p id="p1">Seu voucher está ativo e vinculado ao CAR ${this.data.car}</p>
+                        <p id="p1">Seu voucher está ativo e vinculado a ${this.data.nomePropriedade} </p>
+                        <p id="p2">CAR Federal ${this.data.car}</p>
                         <p id="p2">Acesso ao PREM produtor liberado</p>
                         <a href="${gerarUrl()}" class="button"><strong>Acessar</strong></a>
                     </div>
@@ -203,6 +205,6 @@ export class PagamentoAprovadoTemplate extends BaseTemplate<EmailData>{
     </table>
 </body>
 </html>
-`
-    }
+`;
+  }
 }

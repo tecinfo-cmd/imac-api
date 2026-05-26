@@ -509,7 +509,9 @@ export class ElegibilidadeService {
         subject: 'Retorno elegibilidade',
         template: new ResultadoEligibilidadeTemplate({
           car: solicitacaoEligibilidade.carFederal,
-          carEstadual: solicitacaoEligibilidade.carEstadual,
+          carEstadual: solicitacaoEligibilidade.carEstadual
+            ? solicitacaoEligibilidade.carEstadual
+            : '',
           deteccoes: solicitacaoEligibilidade.retornoAgrotools.deteccoes,
           propriedadeApta: solicitacaoEligibilidade.retornoAgrotools.isEligible,
           areaDesmatamentoTotal:
@@ -559,13 +561,18 @@ export class ElegibilidadeService {
     };
   }
 
-  async enviarConfirmacaoPagamento(email: string, car: string) {
+  async enviarConfirmacaoPagamento(
+    email: string,
+    carFederal: string,
+    nomePropriedade: string,
+  ) {
     try {
       await this.emailService.enviarEmailTemplate({
         recipients: [email],
         subject: 'Confirmação de Pagamento',
         template: new PagamentoAprovadoTemplate({
-          car: email,
+          car: carFederal,
+          nomePropriedade: nomePropriedade,
         }),
       });
     } catch (error) {

@@ -171,8 +171,9 @@ export class NovoDocumentoEnviadoProdutorTemplate extends BaseTemplate<EmailData
                     <p>Atenciosamente,<br>Equipe PREM</p>
 
                     <p style="margin-top: 20px;"><strong>CONTATO</strong><br>
-                        Fones: (65) 9 9977-8287 / (65) 3057-9291<br>
+                        Fones: (65) 99977-8227<br>
                         Email: <a href="mailto:prem@imac.agr.br">prem@imac.agr.br</a>
+                        Site: <a href=" https://imac.agr.br/">https://imac.agr.br</a>
                     </p>
                 </footer>
             </td>
