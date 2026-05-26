@@ -1455,7 +1455,7 @@ export class AgrotoolsService {
           data.base64Image,
         );
 
-        territorio.imagemElegibilidade = documento.url;
+        territorio.imagemAnalise = documento.url;
         territorio.statusImagem = 'ATUALIZADA';
 
         await this.territorioRepository.update(territorio.id, territorio);

@@ -43,8 +43,8 @@ export class TerritorioEntity {
 
   @Expose()
   @ApiProperty()
-  @Column({name: 'IMAGEM_ELEGIBILIDADE'})
-  imagemElegibilidade: string;
+  @Column({name: 'IMAGEM_ANALISE'})
+  imagemAnalise: string;
 
   @Expose()
   @ApiProperty()
