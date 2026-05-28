@@ -367,10 +367,6 @@ export class AgrotoolsService {
 
     planoAdequacao.adequacaoId = data.adequancyPlanId;
     await this.atualizaIdContestacao(planoAdequacao);
-    await this.territorioRepository.update(
-      { codigoTerritorio: cdTerritory },
-      { statusImagem: 'ATUALIZAR' },
-    );
     return data;
   }
 
@@ -406,7 +402,6 @@ export class AgrotoolsService {
       );
 
       territorio.imagemAdequacao = documento.url;
-      territorio.statusImagem = 'ATUALIZADA';
       await this.territorioRepository.update(territorio.id, territorio);
 
       return territorio;
@@ -503,10 +498,6 @@ export class AgrotoolsService {
       });
 
     retornoAgrotools.contestacaoId = data.contestationId;
-    await this.territorioRepository.update(
-      { codigoTerritorio: cdTerritory },
-      { statusImagem: 'ATUALIZAR' },
-    );
     await this.retornoAnaliseRepository.save(retornoAgrotools);
     return data;
   }
@@ -1420,13 +1411,12 @@ export class AgrotoolsService {
         );
 
         territorio.imagemContestacao = documento.url;
-        territorio.statusImagem = 'ATUALIZADA';
-
         await this.territorioRepository.update(territorio.id, territorio);
         return territorio;
       }
     } catch (error) {
-      console.log(this.getErroAgrotools(error));
+      territorio.erroAgrotools = this.getErroAgrotools(error);
+      await this.territorioRepository.update(territorio.id, territorio);
     }
 
     return null;
@@ -1456,13 +1446,12 @@ export class AgrotoolsService {
         );
 
         territorio.imagemAnalise = documento.url;
-        territorio.statusImagem = 'ATUALIZADA';
-
         await this.territorioRepository.update(territorio.id, territorio);
         return territorio;
       }
     } catch (error) {
-      console.log(this.getErroAgrotools(error));
+      territorio.erroAgrotools = this.getErroAgrotools(error);
+      await this.territorioRepository.update(territorio.id, territorio);
     }
 
     return null;

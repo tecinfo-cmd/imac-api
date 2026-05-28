@@ -21,17 +21,17 @@ export class JobElegibilidadeService {
   }
 
   //VERIFICA TRANSAÇÃO CONSULTA FRIGORIFICO
-  @Cron('0 */2 * * * *')
+  @Cron('0 */3 * * * *')
   verificaConsultaTransacaFrigorifico() {
     this.agroToolsService.consultaTransacaoFrigorico();
   }
 
-  @Cron('0 */3 * * * *')
+  @Cron('0 */5 * * * *')
   verificaFormulario() {
     this.agroToolsService.consultaFormularioAutoVistoria();
   }
 
-  @Cron('0 */1 * * * *')
+  @Cron('0 */2 * * * *')
   cadastrarPessoaAgrotools() {
     this.agroToolsService.cadastraPessoaAgrotools();
   }
@@ -41,12 +41,12 @@ export class JobElegibilidadeService {
     this.agroToolsService.verificaAnalise();
   }
 
-  @Cron('0 */4 * * * *')
+  @Cron('0 */6 * * * *')
   verificaContestacoesAnalise() {
     this.agroToolsService.verificaContestacoesAnalise();
   }
 
-  @Cron('0 */5 * * * *')
+  @Cron('0 */4 * * * *')
   verificaPlanosAdequacao() {
     this.agroToolsService.verificaPlanosAdequacao();
   }

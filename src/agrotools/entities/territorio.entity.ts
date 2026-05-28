@@ -58,12 +58,8 @@ export class TerritorioEntity {
 
   @Expose()
   @ApiProperty()
-  @Column({ name: 'STATUS_IMAGEM' })
-  statusImagem: string;
+  @Column({name: 'ERRO_AGROTOOLS'})
+  erroAgrotools: string;
 
-  @Expose()
-  @ApiProperty()
-  @Column({ name: 'HASH_IMAGEM' })
-  hashImagem: string;
 }
 
