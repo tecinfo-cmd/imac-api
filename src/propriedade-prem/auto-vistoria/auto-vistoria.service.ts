@@ -1,10 +1,20 @@
-import { BadRequestException, forwardRef, HttpStatus, Inject, Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  forwardRef,
+  HttpStatus,
+  Inject,
+  Injectable,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { MensagemResponse } from '../response/mensagem-response';
 import { PropriedadePremService } from '../propriedade-prem.service';
 import NegocioException from '../../exception/negocio-exception';
-import { AutoVistoriaEntity, StatusVistoria, Vistoria } from './entities/auto-vistoria.entity';
+import {
+  AutoVistoriaEntity,
+  StatusVistoria,
+  Vistoria,
+} from './entities/auto-vistoria.entity';
 import { AutoVistoriaRequest } from './request/auto-vistoria.request';
 import { plainToInstance } from 'class-transformer';
 import * as moment from 'moment';
@@ -23,35 +33,48 @@ import { MensagemService } from '../../message/mensagem.service';
 
 @Injectable()
 export class AutoVistoriaService {
+  constructor(
+    @InjectRepository(AutoVistoriaEntity)
+    private readonly autoVistoriaRepository: Repository<AutoVistoriaEntity>,
+    private readonly propriedadeService: PropriedadePremService,
+    private readonly pessoaService: PessoaService,
+    @Inject(forwardRef(() => AgrotoolsService))
+    private readonly agrotoolsService: AgrotoolsService,
+    private readonly emailService: EmailService,
+    private readonly documentoUploadService: DocumentoUploadService,
+    private readonly mensagemService: MensagemService,
+  ) {}
 
-  constructor(@InjectRepository(AutoVistoriaEntity)
-              private readonly autoVistoriaRepository: Repository<AutoVistoriaEntity>,
-              private readonly propriedadeService: PropriedadePremService,
-              private readonly pessoaService: PessoaService,
-              @Inject(forwardRef(() => AgrotoolsService))
-              private readonly agrotoolsService: AgrotoolsService,
-              private readonly emailService: EmailService,
-              private readonly documentoUploadService: DocumentoUploadService,
-              private readonly mensagemService: MensagemService,
-  ) {
-
-  }
-
-  async cadastrarAutoVistoria(request: AutoVistoriaRequest, usuarioLogado: AuthenticatedRequest): Promise<MensagemResponse> {
-
-    const propriedade = await this.propriedadeService.consultaPropriedadePorId(request.idPropriedade, usuarioLogado);
-    let pessoa = await this.pessoaService.buscaPessoaEmail(usuarioLogado.user.email);
+  async cadastrarAutoVistoria(
+    request: AutoVistoriaRequest,
+    usuarioLogado: AuthenticatedRequest,
+  ): Promise<MensagemResponse> {
+    const propriedade = await this.propriedadeService.consultaPropriedadePorId(
+      request.idPropriedade,
+      usuarioLogado,
+    );
+    let pessoa = await this.pessoaService.buscaPessoaEmail(
+      usuarioLogado.user.email,
+    );
 
     if (!propriedade) {
-      throw new NegocioException(HttpStatus.NOT_FOUND, 'Propriedade não cadastrada.');
+      throw new NegocioException(
+        HttpStatus.NOT_FOUND,
+        'Propriedade não cadastrada.',
+      );
     }
 
     if (!propriedade.territorios || propriedade.territorios.length == 0) {
-      throw new NegocioException(HttpStatus.NOT_FOUND, 'Propriedade sem territorio cadastrado.');
+      throw new NegocioException(
+        HttpStatus.NOT_FOUND,
+        'Propriedade sem territorio cadastrado.',
+      );
     }
 
     const emails = propriedade.proprietarios.map((p) => p.pessoa.email);
-    const proprietarios = propriedade.proprietarios.filter((p) => p.tipoProprietario == 'PROPRIETARIO');
+    const proprietarios = propriedade.proprietarios.filter(
+      (p) => p.tipoProprietario == 'PROPRIETARIO',
+    );
 
     if (proprietarios.length > 0) {
       const pessoas = proprietarios.map((p) => p.pessoa);
@@ -69,7 +92,10 @@ export class AutoVistoriaService {
     try {
       if (autoVistoriaAgendada) {
         if (autoVistoriaAgendada.codigoEvidencia) {
-          throw new NegocioException(HttpStatus.BAD_REQUEST, 'Já existe uma auto vistoria agendada para esta propriedade.');
+          throw new NegocioException(
+            HttpStatus.BAD_REQUEST,
+            'Já existe uma auto vistoria agendada para esta propriedade.',
+          );
         } else {
           const vistoriaRequest = {
             territoryId: propriedade.territorios[0].codigoTerritorio,
@@ -80,31 +106,36 @@ export class AutoVistoriaService {
             scheduleName: propriedade.nomePropriedade,
           } as unknown as VistoriaAgrotools;
 
-          const autoVistoriaResponse = await this.agrotoolsService.solicitarVistoria(vistoriaRequest);
-          autoVistoriaAgendada.codigoEvidencia = autoVistoriaResponse.cdEvidence;
+          const autoVistoriaResponse =
+            await this.agrotoolsService.solicitarVistoria(vistoriaRequest);
+          autoVistoriaAgendada.codigoEvidencia =
+            autoVistoriaResponse.cdEvidence;
           await this.autoVistoriaRepository.save(autoVistoriaAgendada);
 
           const nomePropriedade = propriedade?.nomePropriedade;
           const proprietario = propriedade?.proprietarios[0].pessoa.nome;
           const telefone = propriedade?.proprietarios[0].pessoa.telefone;
-          const analise = 'Autovistoria agendada';
 
-          const dados = {produtor: proprietario, propriedade: nomePropriedade,carFederal: propriedade?.carFederal, telefone: telefone  };
+          const dados = {
+            produtor: proprietario,
+            propriedade: nomePropriedade,
+            carFederal: propriedade?.carFederal,
+            telefone: telefone,
+          };
           await this.mensagemService.enviarMensagemAutoVistoria(dados);
 
           await this.emailService.enviarEmailTemplate({
-            recipients: [emails.length > 0 ? emails[0] : usuarioLogado.user.email],
+            recipients: [
+              emails.length > 0 ? emails[0] : usuarioLogado.user.email,
+            ],
             subject: 'Autovistoria agendada',
-            template: new AutoVistoriaAgendadaTemplate(
-              {
-                dataLimite: new Date(autoVistoriaAgendada.dataTermino),
-              },
-            ),
+            template: new AutoVistoriaAgendadaTemplate({
+              dataLimite: new Date(autoVistoriaAgendada.dataTermino),
+            }),
           });
         }
-
       } else {
-        let data: Date = new Date(request.dataInicio);
+        const data: Date = new Date(request.dataInicio);
         const dataFim = await this.adicionarDias(data, 10);
         const autoVistoria = plainToInstance(AutoVistoriaEntity, {
           idPropriedade: request.idPropriedade,
@@ -123,7 +154,8 @@ export class AutoVistoriaService {
           scheduleName: propriedade.nomePropriedade,
         } as unknown as VistoriaAgrotools;
 
-        const autoVistoriaResponse = await this.agrotoolsService.solicitarVistoria(vistoriaRequest);
+        const autoVistoriaResponse =
+          await this.agrotoolsService.solicitarVistoria(vistoriaRequest);
         entity.codigoEvidencia = autoVistoriaResponse.cdEvidence;
         await this.autoVistoriaRepository.save(entity);
 
@@ -131,17 +163,22 @@ export class AutoVistoriaService {
         const proprietario = propriedade?.proprietarios[0].pessoa.nome;
         const telefone = propriedade?.proprietarios[0].pessoa.telefone;
 
-        const dados = {produtor: proprietario, propriedade: nomePropriedade,carFederal: propriedade?.carFederal, telefone: telefone  };
+        const dados = {
+          produtor: proprietario,
+          propriedade: nomePropriedade,
+          carFederal: propriedade?.carFederal,
+          telefone: telefone,
+        };
         await this.mensagemService.enviarMensagemAutoVistoria(dados);
 
         await this.emailService.enviarEmailTemplate({
-          recipients: [emails.length > 0 ? emails[0] : usuarioLogado.user.email],
+          recipients: [
+            emails.length > 0 ? emails[0] : usuarioLogado.user.email,
+          ],
           subject: 'Autovistoria agendada',
-          template: new AutoVistoriaAgendadaTemplate(
-            {
-              dataLimite: new Date(entity.dataTermino),
-            },
-          ),
+          template: new AutoVistoriaAgendadaTemplate({
+            dataLimite: new Date(entity.dataTermino),
+          }),
         });
       }
     } catch (error) {
@@ -160,10 +197,15 @@ export class AutoVistoriaService {
     });
 
     if (!autoVistoria) {
-      throw new NegocioException(HttpStatus.NOT_FOUND, 'Vistoria não encontrada.');
+      throw new NegocioException(
+        HttpStatus.NOT_FOUND,
+        'Vistoria não encontrada.',
+      );
     }
 
-    const formulario: FormularioVistoriaResponse = JSON.parse(<string>autoVistoria.formulario);
+    const formulario: FormularioVistoriaResponse = JSON.parse(
+      <string>autoVistoria.formulario,
+    );
     if (formulario) {
       formulario.reportUrl = request.reportUrl;
       autoVistoria.formulario = JSON.stringify(formulario);
@@ -173,35 +215,37 @@ export class AutoVistoriaService {
     return { sucesso: true, mensagem: 'Dados atualizados com sucesso' };
   }
 
-  async consultaAutoVistoria(idPropriedade: number,
-                             user: any) {
-
+  async consultaAutoVistoria(idPropriedade: number, user: any) {
     const query = this.autoVistoriaRepository.createQueryBuilder('at');
     query.innerJoinAndSelect('at.propriedade', 'propriedade');
     query.leftJoinAndSelect('at.documentos', 'documentos');
     query.leftJoinAndSelect('propriedade.proprietarios', 'proprietarios');
     query.leftJoinAndSelect('proprietarios.pessoa', 'pessoa');
-    query.where('at.idPropriedade = :idPropriedade', { idPropriedade: idPropriedade });
+    query.where('at.idPropriedade = :idPropriedade', {
+      idPropriedade: idPropriedade,
+    });
 
     if (user.roles.includes('PRODUTOR')) {
       query.andWhere('pessoa.email =:email', { email: user.email });
     }
 
     return await query.getMany();
-
   }
 
   async listarAutovistoria() {
-    return await this.autoVistoriaRepository.createQueryBuilder('autoVistoria')
+    return await this.autoVistoriaRepository
+      .createQueryBuilder('autoVistoria')
       .where('autoVistoria.formulario is NULL')
       .andWhere('autoVistoria.codigoEvidencia is NOT NULL')
       .getMany();
   }
 
   async atualizar(autoVistoria: AutoVistoriaEntity) {
-    return await this.autoVistoriaRepository.update(autoVistoria.id, autoVistoria);
+    return await this.autoVistoriaRepository.update(
+      autoVistoria.id,
+      autoVistoria,
+    );
   }
-
 
   async adicionarDias(data: Date, dias: number): Promise<Date> {
     const novaData = new Date(data);
@@ -209,7 +253,10 @@ export class AutoVistoriaService {
     return novaData;
   }
 
-  async criarParecerAutoVistoria(id: number, payload: UploadPayloadType<CriarParecerAutoVistoriaRequest>): Promise<AutoVistoriaEntity> {
+  async criarParecerAutoVistoria(
+    id: number,
+    payload: UploadPayloadType<CriarParecerAutoVistoriaRequest>,
+  ): Promise<AutoVistoriaEntity> {
     const autoVistoria = await this.autoVistoriaRepository.findOne({
       where: {
         id,
@@ -221,15 +268,21 @@ export class AutoVistoriaService {
     }
 
     if (autoVistoria.vistoria !== Vistoria.AguardandoVistoria) {
-      throw new BadRequestException('Não é possível criar um parecer para uma vistoria que não esteja com o status Aguardando Vistoria.');
+      throw new BadRequestException(
+        'Não é possível criar um parecer para uma vistoria que não esteja com o status Aguardando Vistoria.',
+      );
     }
 
-    const documentos = await this.documentoUploadService.uploadFiles(payload.arquivos);
-    const documentosAutoVistoria = documentos.map(documento => ({
+    const documentos = await this.documentoUploadService.uploadFiles(
+      payload.arquivos,
+    );
+    const documentosAutoVistoria = documentos.map((documento) => ({
       nomeArquivo: documento.filename,
       urlArquivo: documento.url,
       nomeArquivoOriginal: documento.originalName,
-      tipo: payload.body.parametros.find(param => param.nome === documento.originalName)?.tipo,
+      tipo: payload.body.parametros.find(
+        (param) => param.nome === documento.originalName,
+      )?.tipo,
     }));
 
     const autoVistoriaAtualizado = await this.autoVistoriaRepository.save({

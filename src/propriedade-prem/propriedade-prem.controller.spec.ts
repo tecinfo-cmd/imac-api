@@ -74,7 +74,7 @@ describe('PropriedadePremController', () => {
     it('should call service.atualizaDadosBasicos and return the result', async () => {
       const idPropriedade = 1;
       const dadosBasicosRequest: DadosBasicosRequest = { /* mock data */ } as DadosBasicosRequest;
-      const expectedResult: MensagemResponse = { sucesso: true, mensagem: 'Dados atualizados com sucesso' };
+      const expectedResult: MensagemResponse = { sucesso: true, message: 'Dados atualizados com sucesso' };
       mockPropriedadePremService.atualizaDadosBasicos.mockResolvedValue(expectedResult);
 
       const mockRequest = { user: { email: 'test@example.com' } } as AuthenticatedRequest;
@@ -90,7 +90,7 @@ describe('PropriedadePremController', () => {
     it('should call service.cadastraProprietario and return the result', async () => {
       const idPropriedade = 1;
       const proprietarioRequest: ProprietarioProprietarioRequest[] = [/* mock data */] as ProprietarioProprietarioRequest[];
-      const expectedResult: MensagemResponse = { sucesso: true, mensagem: 'Dados atualizados com sucesso' };
+      const expectedResult: MensagemResponse = { sucesso: true, message: 'Dados atualizados com sucesso' };
       mockPropriedadePremService.cadastraProprietario.mockResolvedValue(expectedResult);
 
       const result = await controller.cadastrarProprietario(proprietarioRequest, idPropriedade);

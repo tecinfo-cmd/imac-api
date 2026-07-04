@@ -29,11 +29,10 @@ import { DocumentoResponseDto } from '../dto/documento-response.dto';
 
 @Entity({ schema: 'IMAC', name: 'TB_PROPRIEDADES' })
 export class Propriedade {
-
   @Expose()
   @ApiProperty()
   @PrimaryGeneratedColumn({
-    name: 'ID'
+    name: 'ID',
   })
   id: number;
 
@@ -44,7 +43,9 @@ export class Propriedade {
     length: 43,
     unique: true,
   })
-  @Transform(({ value }: { value: string }) => value?.replace(/[.]/g, ''), { toClassOnly: true })
+  @Transform(({ value }: { value: string }) => value?.replace(/[.]/g, ''), {
+    toClassOnly: true,
+  })
   carFederal: string;
 
   @ApiProperty()
@@ -53,9 +54,9 @@ export class Propriedade {
   @JoinTable({
     name: 'TB_PROPRIEDADE_PROPRIETARIOS_TB_PROPRIETARIOS',
     joinColumn: { name: 'ID_PROPRIEDADE' },
-    inverseJoinColumn: { name: 'ID_PROPRIETARIO' }
+    inverseJoinColumn: { name: 'ID_PROPRIETARIO' },
   })
-  proprietarios: Proprietario[]
+  proprietarios: Proprietario[];
 
   @ApiProperty()
   @Expose()
@@ -78,7 +79,10 @@ export class Propriedade {
   endereco?: Endereco;
 
   @ApiProperty()
-  @OneToOne(() => RetornoAnaliseEntity, (retornoAnalise) => retornoAnalise.propriedade)
+  @OneToOne(
+    () => RetornoAnaliseEntity,
+    (retornoAnalise) => retornoAnalise.propriedade,
+  )
   analise?: RetornoAnaliseEntity;
 
   @Column({ name: 'ID_SOLICITACAO' })
@@ -92,7 +96,6 @@ export class Propriedade {
 
   @Column({ name: 'ID_CICLO_PRODUCAO' })
   idClicloProducao?: number;
-
 
   @Column({ name: 'ID_ATIVIDADE_PRINCIPAL' })
   idAtividadePrincipal?: number;
@@ -125,17 +128,17 @@ export class Propriedade {
 
   @Expose()
   @ApiProperty()
-  @Column({name: "HECTARES"})
+  @Column({ name: 'HECTARES' })
   tamanhoPropriedade: number;
 
   @Expose()
   @ApiProperty()
-  @Column({name: "NUMERO_PROPRIETARIOS"})
+  @Column({ name: 'NUMERO_PROPRIETARIOS' })
   numeroProprietarios?: number;
 
   @Expose()
   @ApiProperty()
-  @Column({name: 'STATUS_VOUCHER'})
+  @Column({ name: 'STATUS_VOUCHER' })
   statusVoucher: boolean;
 
   @Expose()
@@ -145,26 +148,29 @@ export class Propriedade {
 
   @Expose()
   @ApiProperty()
-  @Column({ name: 'TERMO_ADEQUACAO_ACEITO'})
+  @Column({ name: 'TERMO_ADEQUACAO_ACEITO' })
   termoAdequacaoAceito: boolean;
 
   @ApiProperty()
-  @Column({ name: "ID_TERMO_COMPROMISSO"})
+  @Column({ name: 'ID_TERMO_COMPROMISSO' })
   idTermoCompromisso?: string;
 
   @Expose()
   @ApiProperty()
-  @Column({ name: "URL_TERMO_COMPROMISSO"})
+  @Column({ name: 'URL_TERMO_COMPROMISSO' })
   urlTermoCompromisso?: string;
 
   @Expose()
   @ApiProperty()
-  @Column({ name: "ETAPA", default: Etapas.Credenciamento })
+  @Column({ name: 'ETAPA', default: Etapas.Credenciamento })
   etapa?: string;
 
   @Expose()
   @ApiProperty()
-  @Column({ name: "STATUS", default: StatusEtapas.Credenciamento.VoucherPendente })
+  @Column({
+    name: 'STATUS',
+    default: StatusEtapas.Credenciamento.VoucherPendente,
+  })
   status?: string;
 
   @Column({ name: 'DATA_CRIACAO', default: () => 'CURRENT_TIMESTAMP' })
@@ -176,44 +182,50 @@ export class Propriedade {
   @Expose()
   @ApiProperty({ type: () => [DocumentoResponseDto] })
   @ManyToMany(() => Documento)
-  @JoinTable(
-    {
-      name: 'TB_DOCUMENTOS_PROPRIEDADES',
-      joinColumn: { name: 'ID_PROPRIEDADE' },
-      inverseJoinColumn: { name: 'ID_DOCUMENTO' }
-    }
-  )
+  @JoinTable({
+    name: 'TB_DOCUMENTOS_PROPRIEDADES',
+    joinColumn: { name: 'ID_PROPRIEDADE' },
+    inverseJoinColumn: { name: 'ID_DOCUMENTO' },
+  })
   @Transform(({ value: documentos, obj }) => {
     if (!documentos) return [];
     const analistaId = obj.analista?.id;
-    const documentosComFlag = documentos.map(doc => ({
+    const documentosComFlag = documentos.map((doc) => ({
       ...doc,
       enviadoPorAnalista: doc.idUsuarioUpload === analistaId,
     }));
-    return plainToInstance(DocumentoResponseDto, documentosComFlag, { excludeExtraneousValues: true });
+    return plainToInstance(DocumentoResponseDto, documentosComFlag, {
+      excludeExtraneousValues: true,
+    });
   })
-  documentos: DocumentoResponseDto[]
+  documentos: DocumentoResponseDto[];
 
   @Expose()
   @ApiProperty()
   @ApiProperty()
-  @OneToMany(() => PagamentoMulta, (pagamentoMulta) => pagamentoMulta   .propriedade)
-  pagamentoMultas: PagamentoMulta[]
+  @OneToMany(
+    () => PagamentoMulta,
+    (pagamentoMulta) => pagamentoMulta.propriedade,
+  )
+  pagamentoMultas: PagamentoMulta[];
 
   @Expose()
   @ApiProperty()
   @OneToMany(() => TerritorioEntity, (territorio) => territorio.propriedade)
-  territorios: TerritorioEntity[]
+  territorios: TerritorioEntity[];
 
   @Expose()
   @ApiProperty()
-  @OneToMany(() => RetornoAnaliseEntity, (retornoAnalise) => retornoAnalise.propriedade)
-  retornoAnalises: RetornoAnaliseEntity[]
+  @OneToMany(
+    () => RetornoAnaliseEntity,
+    (retornoAnalise) => retornoAnalise.propriedade,
+  )
+  retornoAnalises: RetornoAnaliseEntity[];
 
   @Expose()
   @ApiProperty()
-  @OneToMany(() => VoucherEntity, voucher => voucher.propriedade)
-  vouches: VoucherEntity[]
+  @OneToMany(() => VoucherEntity, (voucher) => voucher.propriedade)
+  vouches: VoucherEntity[];
 
   @Expose()
   @ApiProperty()
@@ -229,4 +241,28 @@ export class Propriedade {
   @Column({ name: 'CAR_ESTADUAL' })
   carEstadual: string;
 
+  @Expose()
+  @ApiProperty()
+  @Column({ name: 'CONTESTAR_DETECCOES' })
+  contestarDeteccoes: boolean;
+
+  @Expose()
+  @ApiProperty()
+  @Column({ name: 'CONFIRMAR_DETECCOES' })
+  confirmarDeteccoes: boolean;
+
+  @Expose()
+  @ApiProperty()
+  @Column({ name: 'TERMO_ASSINADO' })
+  termoAssinado: boolean;
+
+  @Expose()
+  @ApiProperty()
+  @Column({ name: 'PROPOR_NOVA_AREA' })
+  proporNovaArea: boolean;
+
+  @Expose()
+  @ApiProperty()
+  @Column({ name: 'CONFIRMAR_ESTRATEGIA' })
+  confirmarEstrategia: boolean;
 }
