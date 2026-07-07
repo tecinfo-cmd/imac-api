@@ -148,6 +148,7 @@ export class PropriedadePremService {
       propriedade.tamanhoPropriedade = dadosBasicosRequest.tamanhoPropriedade;
       propriedade.numeroProprietarios = dadosBasicosRequest.numeroProprietarios;
       propriedade.idClicloProducao = dadosBasicosRequest.idCicloProducao;
+      propriedade.status = StatusEtapas.Cadastro.CadastroCompleto;
       propriedade.idAtividadePrincipal =
         dadosBasicosRequest.idAtividadePrincipal;
 
