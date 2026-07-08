@@ -1,67 +1,57 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
+import * as process from 'process';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { ValidationPipe } from '@nestjs/common';
 import { Logger } from 'nestjs-pino';
 
-async function bootstrap() {
-  const app = await NestFactory.create(AppModule, { bufferLogs: true });
 
+async function bootstrap() {
+  const app = await NestFactory.create(AppModule);
   app.setGlobalPrefix('imac/api/v1');
   app.enableCors();
-
+  app.useGlobalPipes(new ValidationPipe({
+    transform: true,
+    forbidNonWhitelisted: true,
+  }));
   app.useLogger(app.get(Logger));
 
-  app.useGlobalPipes(
-    new ValidationPipe({
-      transform: true,
-      whitelist: true,
-      forbidNonWhitelisted: true,
-    }),
-  );
 
   const config = new DocumentBuilder()
     .setTitle('IMAC')
-    .setDescription('Instituto Matogrossense da Carne')
+    .setDescription('instituto matogrossense da carne')
+    .addServer(process.env.URL_AMBIENTE as string, 'Local environment')
     .setVersion('1.0.0')
-    .addServer(
-      process.env.URL_AMBIENTE ?? 'http://localhost:3000',
-      'Ambiente Ativo',
-    )
     .addBearerAuth({
       type: 'http',
       scheme: 'bearer',
       bearerFormat: 'JWT',
       in: 'header',
       name: 'Authorization',
-      description: 'Insira o token JWT',
+      description: 'Enter your Bearer token',
     })
     .addApiKey(
       {
         type: 'apiKey',
         name: 'X-API-KEY',
         in: 'header',
-        description: 'API key exclusiva para webhooks',
+        description: 'api key apenas para webhook',
       },
-      'api-key-header',
+      'api-key-header'
     )
     .addSecurityRequirements('bearer')
     .addTag('Imac')
     .build();
-
   const documentFactory = () => SwaggerModule.createDocument(app, config);
+
   SwaggerModule.setup('api-docs', app, documentFactory, {
-    useGlobalPrefix: false,
     swaggerOptions: {
       tagsSorter: 'alpha',
-      persistAuthorization: true,
     },
   });
 
-  const port = process.env.PORT ? Number(process.env.PORT) : 3000;
-
-  await app.listen(port, '0.0.0.0');
-
+  const server =  await app.listen(process.env.PORT ?? 3000);
+  server.setTimeout(60000)
 }
 
 bootstrap();
