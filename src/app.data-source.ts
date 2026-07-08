@@ -36,6 +36,7 @@ import { PagamentoMulta } from './cobranca/entities/pagamento-multa.entities';
 import { Frigorifico } from './frigorico/entities/frigorifico.entity';
 import { VoucherEntity } from './frigorico/entities/voucher.entity';
 import { DocumentoOrientativo } from './documento-orientativo/entity/documento-orientativo.entity';
+import { ErroFuncionalidade } from './exception/erro-funcionalidade';
 
 ConfigModule.forRoot();
 
@@ -82,9 +83,12 @@ export const AppDataSource = new DataSource({
     PagamentoMulta,
     Frigorifico,
     VoucherEntity,
-    DocumentoOrientativo
+    DocumentoOrientativo,
+    ErroFuncionalidade,
   ],
-  migrations: process.env.SET_MIGRATION_PATH ? ['src/migrations/*.ts'] : undefined,
+  migrations: process.env.SET_MIGRATION_PATH
+    ? ['src/migrations/*.ts']
+    : undefined,
   ssl: {
     ca: fs.readFileSync('ca-certificate.crt'),
   },
