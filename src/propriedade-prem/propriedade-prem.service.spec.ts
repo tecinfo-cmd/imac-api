@@ -9,7 +9,10 @@ import { CicloProducao } from './entities/ciclo-producao.entity';
 import { AtividadePrincipal } from './entities/atividade-principal.entity';
 import { Cidade } from '../elegibilidade/entities/cidade.entity';
 import { Documento } from '../shared/entity/documento.entity';
-import { BadRequestException, InternalServerErrorException } from '@nestjs/common';
+import {
+  BadRequestException,
+  InternalServerErrorException,
+} from '@nestjs/common';
 import { DadosBasicosRequest } from './request/dados-basicos-request';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { ProprietarioProprietarioRequest } from './request/proprietario-proprietario-request';
@@ -20,7 +23,10 @@ import { AuthenticatedRequest } from '../shared/interfaces/authenticated-request
 import { UsuarioService } from '../usuario/usuario.service';
 import { PdfService } from '../pdf/pdf-service';
 import { AssinaturaService } from '../assinatura/assinatura.service';
-import { AutoVistoriaEntity, Vistoria } from './auto-vistoria/entities/auto-vistoria.entity';
+import {
+  AutoVistoriaEntity,
+  Vistoria,
+} from './auto-vistoria/entities/auto-vistoria.entity';
 import { Etapas, StatusEtapas } from './enum/etapas-status-propriedade.const';
 import { DCSStatus } from './dto/validacao-dcs-response';
 import NegocioException from '../exception/negocio-exception';
@@ -94,16 +100,46 @@ describe('PropriedadePremService', () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         PropriedadePremService,
-        { provide: getRepositoryToken(Propriedade), useFactory: createMockRepository },
-        { provide: getRepositoryToken(Endereco), useFactory: createMockRepository },
-        { provide: getRepositoryToken(CicloProducao), useFactory: createMockRepository },
-        { provide: getRepositoryToken(AtividadePrincipal), useFactory: createMockRepository },
-        { provide: getRepositoryToken(Cidade), useFactory: createMockRepository },
-        { provide: getRepositoryToken(Documento), useFactory: createMockRepository },
-        { provide: getRepositoryToken(AutoVistoriaEntity), useFactory: createMockRepository },
-        { provide: getRepositoryToken(PagamentoMulta), useFactory: createMockRepository },
-        { provide: ProprietarioPremService, useValue: mockProprietarioPremService },
-        { provide: DocumentoUploadService, useValue: mockDocumentoUploadService },
+        {
+          provide: getRepositoryToken(Propriedade),
+          useFactory: createMockRepository,
+        },
+        {
+          provide: getRepositoryToken(Endereco),
+          useFactory: createMockRepository,
+        },
+        {
+          provide: getRepositoryToken(CicloProducao),
+          useFactory: createMockRepository,
+        },
+        {
+          provide: getRepositoryToken(AtividadePrincipal),
+          useFactory: createMockRepository,
+        },
+        {
+          provide: getRepositoryToken(Cidade),
+          useFactory: createMockRepository,
+        },
+        {
+          provide: getRepositoryToken(Documento),
+          useFactory: createMockRepository,
+        },
+        {
+          provide: getRepositoryToken(AutoVistoriaEntity),
+          useFactory: createMockRepository,
+        },
+        {
+          provide: getRepositoryToken(PagamentoMulta),
+          useFactory: createMockRepository,
+        },
+        {
+          provide: ProprietarioPremService,
+          useValue: mockProprietarioPremService,
+        },
+        {
+          provide: DocumentoUploadService,
+          useValue: mockDocumentoUploadService,
+        },
         { provide: UsuarioService, useValue: mockUsuarioService },
         { provide: PdfService, useValue: mockPdfService },
         { provide: AssinaturaService, useValue: mockAssinaturaService },
@@ -115,7 +151,9 @@ describe('PropriedadePremService', () => {
     propriedadeRepository = module.get(getRepositoryToken(Propriedade));
     enderecoRepository = module.get(getRepositoryToken(Endereco));
     cicloProducaoRepository = module.get(getRepositoryToken(CicloProducao));
-    atividadePrincipalRepository = module.get(getRepositoryToken(AtividadePrincipal));
+    atividadePrincipalRepository = module.get(
+      getRepositoryToken(AtividadePrincipal),
+    );
     cidadeRepository = module.get(getRepositoryToken(Cidade));
     documentoRepository = module.get(getRepositoryToken(Documento));
     proprietarioService = module.get(ProprietarioPremService);
@@ -132,10 +170,15 @@ describe('PropriedadePremService', () => {
     expect(service).toBeDefined();
   });
 
-
   describe('listarAtividadePrincipal', () => {
     it('should return a list of AtividadePrincipal', async () => {
-      const expectedResult: AtividadePrincipal[] = [{ id: 1, nome: 'Agricultura', descricao: 'Fazenda' } as AtividadePrincipal];
+      const expectedResult: AtividadePrincipal[] = [
+        {
+          id: 1,
+          nome: 'Agricultura',
+          descricao: 'Fazenda',
+        } as AtividadePrincipal,
+      ];
       atividadePrincipalRepository.find!.mockResolvedValue(expectedResult);
       const result = await service.listarAtividadePrincipal();
       expect(result).toEqual(expectedResult);
@@ -145,7 +188,9 @@ describe('PropriedadePremService', () => {
 
   describe('listarCicloProducao', () => {
     it('should return a list of CicloProducao', async () => {
-      const expectedResult: CicloProducao[] = [{ id: 1, nome: 'Anual', descricao: 'Fazenda' } as CicloProducao];
+      const expectedResult: CicloProducao[] = [
+        { id: 1, nome: 'Anual', descricao: 'Fazenda' } as CicloProducao,
+      ];
       cicloProducaoRepository.find!.mockResolvedValue(expectedResult);
       const result = await service.listarCicloProducao();
       expect(result).toEqual(expectedResult);
@@ -155,8 +200,10 @@ describe('PropriedadePremService', () => {
 
   describe('cadastrarPropriedade', () => {
     it('should save and return the property', async () => {
-      const propriedadeInput = { nomePropriedade: 'Fazenda Teste' } as Propriedade;
-      const expectedResult = {...propriedadeInput } as Propriedade;
+      const propriedadeInput = {
+        nomePropriedade: 'Fazenda Teste',
+      } as Propriedade;
+      const expectedResult = { ...propriedadeInput } as Propriedade;
       propriedadeRepository.save!.mockResolvedValue(expectedResult);
 
       const result = await service.cadastrarPropriedade(propriedadeInput);
@@ -166,20 +213,29 @@ describe('PropriedadePremService', () => {
     });
 
     it('should throw BadRequestException on repository error', async () => {
-      const propriedadeInput = { nomePropriedade: 'Fazenda Teste' } as Propriedade;
+      const propriedadeInput = {
+        nomePropriedade: 'Fazenda Teste',
+      } as Propriedade;
       const errorMessage = 'Database error';
       propriedadeRepository.save!.mockRejectedValue({ message: errorMessage });
 
-      await expect(service.cadastrarPropriedade(propriedadeInput))
-        .rejects.toThrow(new BadRequestException(JSON.stringify(errorMessage)));
+      await expect(
+        service.cadastrarPropriedade(propriedadeInput),
+      ).rejects.toThrow(new BadRequestException(JSON.stringify(errorMessage)));
     });
   });
 
   describe('cadastraProprietario', () => {
     const idPropriedade = 1;
     const proprietarioRequest: ProprietarioProprietarioRequest[] = [
-      { nome: 'Prop 1', email: 'prop1@test.com' } as ProprietarioProprietarioRequest,
-      { nome: 'Prop 2', email: 'prop2@test.com' } as ProprietarioProprietarioRequest,
+      {
+        nome: 'Prop 1',
+        email: 'prop1@test.com',
+      } as ProprietarioProprietarioRequest,
+      {
+        nome: 'Prop 2',
+        email: 'prop2@test.com',
+      } as ProprietarioProprietarioRequest,
     ];
     const mockProprietario1 = { id: 10, pessoa: { id: 100 } } as Proprietario;
     const mockProprietario2 = { id: 11, pessoa: { id: 101 } } as Proprietario;
@@ -200,79 +256,131 @@ describe('PropriedadePremService', () => {
         id: 1,
         nome: 'Cuiabá',
         uf: 'MT',
-        codigo: 5103403
-      }
+        codigo: 5103403,
+      },
     } as unknown as Propriedade;
-    const expectedSuccessResponse = { sucesso: true, mensagem: 'Dados atualizados com sucesso' };
+    const expectedSuccessResponse = {
+      sucesso: true,
+      mensagem: 'Dados atualizados com sucesso',
+    };
 
     it('should call proprietarioService, find property, save property with new owners, and return success', async () => {
       proprietarioService.cadastraAtualizaProprietario
         .mockResolvedValueOnce(mockProprietario1)
         .mockResolvedValueOnce(mockProprietario2);
-      jest.spyOn(service, 'consultaPropriedadePorId').mockResolvedValue(mockPropriedade);
-      propriedadeRepository.save!.mockResolvedValue({ ...mockPropriedade, proprietarios: [mockProprietario1, mockProprietario2] });
+      jest
+        .spyOn(service, 'consultaPropriedadePorId')
+        .mockResolvedValue(mockPropriedade);
+      propriedadeRepository.save!.mockResolvedValue({
+        ...mockPropriedade,
+        proprietarios: [mockProprietario1, mockProprietario2],
+      });
 
-      const result = await service.cadastraProprietario(idPropriedade, proprietarioRequest);
+      const result = await service.cadastraProprietario(
+        idPropriedade,
+        proprietarioRequest,
+      );
 
-      expect(proprietarioService.cadastraAtualizaProprietario).toHaveBeenCalledTimes(2);
-      expect(proprietarioService.cadastraAtualizaProprietario).toHaveBeenCalledWith(proprietarioRequest[0]);
-      expect(proprietarioService.cadastraAtualizaProprietario).toHaveBeenCalledWith(proprietarioRequest[1]);
-      expect(service.consultaPropriedadePorId).toHaveBeenCalledWith(idPropriedade);
-      expect(propriedadeRepository.save).toHaveBeenCalledWith({ ...mockPropriedade, proprietarios: [mockProprietario1, mockProprietario2] });
+      expect(
+        proprietarioService.cadastraAtualizaProprietario,
+      ).toHaveBeenCalledTimes(2);
+      expect(
+        proprietarioService.cadastraAtualizaProprietario,
+      ).toHaveBeenCalledWith(proprietarioRequest[0]);
+      expect(
+        proprietarioService.cadastraAtualizaProprietario,
+      ).toHaveBeenCalledWith(proprietarioRequest[1]);
+      expect(service.consultaPropriedadePorId).toHaveBeenCalledWith(
+        idPropriedade,
+      );
+      expect(propriedadeRepository.save).toHaveBeenCalledWith({
+        ...mockPropriedade,
+        proprietarios: [mockProprietario1, mockProprietario2],
+      });
       expect(result).toEqual(expectedSuccessResponse);
     });
 
     it('should throw NegocioException if property is not found', async () => {
-      proprietarioService.cadastraAtualizaProprietario.mockResolvedValue(mockProprietario1);
+      proprietarioService.cadastraAtualizaProprietario.mockResolvedValue(
+        mockProprietario1,
+      );
       jest.spyOn(service, 'consultaPropriedadePorId').mockResolvedValue(null); // Property not found
 
-      await expect(service.cadastraProprietario(idPropriedade, proprietarioRequest))
-        .rejects.toThrow("Propriedade não encontrada");
+      await expect(
+        service.cadastraProprietario(idPropriedade, proprietarioRequest),
+      ).rejects.toThrow('Propriedade não encontrada');
 
-      expect(proprietarioService.cadastraAtualizaProprietario).toHaveBeenCalled(); // Service is called before check
+      expect(
+        proprietarioService.cadastraAtualizaProprietario,
+      ).toHaveBeenCalled(); // Service is called before check
       expect(propriedadeRepository.save).not.toHaveBeenCalled();
     });
 
     it('should throw BadRequestException on error during proprietarioService call', async () => {
       const errorMessage = 'Error saving proprietario';
-      proprietarioService.cadastraAtualizaProprietario.mockRejectedValue({ message: errorMessage });
+      proprietarioService.cadastraAtualizaProprietario.mockRejectedValue({
+        message: errorMessage,
+      });
 
-      await expect(service.cadastraProprietario(idPropriedade, proprietarioRequest))
-        .rejects.toThrow(new BadRequestException(JSON.stringify(errorMessage)));
+      await expect(
+        service.cadastraProprietario(idPropriedade, proprietarioRequest),
+      ).rejects.toThrow(new BadRequestException(JSON.stringify(errorMessage)));
     });
   });
 
   describe('atualizaDadosBasicos', () => {
     const idPropriedade = 1;
     const dadosBasicosRequest: DadosBasicosRequest = {
-      endereco: { 
+      endereco: {
         id: 1,
         rua: 'Rua Teste',
         numero: '123',
         cep: '123',
         municipio: 'Cuiabá',
         estado: 'MT',
-        logradouro: 'Rua Teste'
+        logradouro: 'Rua Teste',
       } as Endereco,
       tamanhoPropriedade: 100,
       numeroProprietarios: 2,
       idCicloProducao: 1,
       idAtividadePrincipal: 2,
     };
-    const mockEnderecoSaved = { id: 5, ...dadosBasicosRequest.endereco } as Endereco;
-    const mockPropriedadeFound = { id: idPropriedade, nomePropriedade: 'Antiga' } as Propriedade;
-    const expectedSuccessResponse = { sucesso: true, mensagem: 'Dados atualizados com sucesso' };
+    const mockEnderecoSaved = {
+      id: 5,
+      ...dadosBasicosRequest.endereco,
+    } as Endereco;
+    const mockPropriedadeFound = {
+      id: idPropriedade,
+      nomePropriedade: 'Antiga',
+    } as Propriedade;
+    const expectedSuccessResponse = {
+      sucesso: true,
+      mensagem: 'Dados atualizados com sucesso',
+    };
 
     it('should save endereco, find property, update property, save, and return success', async () => {
       enderecoRepository.save!.mockResolvedValue(mockEnderecoSaved);
-      jest.spyOn(service, 'consultaPropriedadePorId').mockResolvedValue(mockPropriedadeFound);
-      propriedadeRepository.save!.mockResolvedValue({ ...mockPropriedadeFound, /* updated fields */ });
+      jest
+        .spyOn(service, 'consultaPropriedadePorId')
+        .mockResolvedValue(mockPropriedadeFound);
+      propriedadeRepository.save!.mockResolvedValue({
+        ...mockPropriedadeFound /* updated fields */,
+      });
 
-      const result = await service.atualizaDadosBasicos(idPropriedade, dadosBasicosRequest, {} as AuthenticatedRequest);
+      const result = await service.atualizaDadosBasicos(
+        idPropriedade,
+        dadosBasicosRequest,
+        {} as AuthenticatedRequest,
+      );
 
-      expect(enderecoRepository.save).toHaveBeenCalledWith(dadosBasicosRequest.endereco);
-      expect(service.consultaPropriedadePorId).toHaveBeenCalledWith(idPropriedade, {} as AuthenticatedRequest);
-      expect(propriedadeRepository.save).toHaveBeenCalledWith({ 
+      expect(enderecoRepository.save).toHaveBeenCalledWith(
+        dadosBasicosRequest.endereco,
+      );
+      expect(service.consultaPropriedadePorId).toHaveBeenCalledWith(
+        idPropriedade,
+        {} as AuthenticatedRequest,
+      );
+      expect(propriedadeRepository.save).toHaveBeenCalledWith({
         ...mockPropriedadeFound,
         endereco: mockEnderecoSaved,
         tamanhoPropriedade: dadosBasicosRequest.tamanhoPropriedade,
@@ -287,11 +395,19 @@ describe('PropriedadePremService', () => {
       enderecoRepository.save!.mockResolvedValue(mockEnderecoSaved);
       jest.spyOn(service, 'consultaPropriedadePorId').mockResolvedValue(null); // Property not found
 
-      await expect(service.atualizaDadosBasicos(idPropriedade, dadosBasicosRequest, {} as AuthenticatedRequest))
-        .rejects.toThrow("Propriedade não encontrada");
+      await expect(
+        service.atualizaDadosBasicos(
+          idPropriedade,
+          dadosBasicosRequest,
+          {} as AuthenticatedRequest,
+        ),
+      ).rejects.toThrow('Propriedade não encontrada');
 
       expect(enderecoRepository.save).toHaveBeenCalled(); // Endereco is saved before check
-      expect(service.consultaPropriedadePorId).toHaveBeenCalledWith(idPropriedade, {} as AuthenticatedRequest);
+      expect(service.consultaPropriedadePorId).toHaveBeenCalledWith(
+        idPropriedade,
+        {} as AuthenticatedRequest,
+      );
       expect(propriedadeRepository.save).not.toHaveBeenCalled();
     });
 
@@ -299,90 +415,147 @@ describe('PropriedadePremService', () => {
       const errorMessage = 'Error saving endereco';
       enderecoRepository.save!.mockRejectedValue({ message: errorMessage });
 
-      await expect(service.atualizaDadosBasicos(idPropriedade, dadosBasicosRequest, {} as AuthenticatedRequest))
-        .rejects.toThrow(new BadRequestException(JSON.stringify(errorMessage)));
+      await expect(
+        service.atualizaDadosBasicos(
+          idPropriedade,
+          dadosBasicosRequest,
+          {} as AuthenticatedRequest,
+        ),
+      ).rejects.toThrow(new BadRequestException(JSON.stringify(errorMessage)));
     });
   });
 
   describe('consultaPropriedadeFiltro', () => {
     const mockQueryBuilder = {
-        leftJoinAndSelect: jest.fn().mockReturnThis(),
-        where: jest.fn().mockReturnThis(),
-        andWhere: jest.fn().mockReturnThis(),
-        skip: jest.fn().mockReturnThis(),
-        take: jest.fn(),
-        getOne: jest.fn(),
-        getMany: jest.fn(),
-        getManyAndCount: jest.fn().mockReturnValue([[], 0]),
+      leftJoinAndSelect: jest.fn().mockReturnThis(),
+      where: jest.fn().mockReturnThis(),
+      andWhere: jest.fn().mockReturnThis(),
+      skip: jest.fn().mockReturnThis(),
+      take: jest.fn(),
+      getOne: jest.fn(),
+      getMany: jest.fn(),
+      getManyAndCount: jest.fn().mockReturnValue([[], 0]),
     };
 
     beforeEach(() => {
-        propriedadeRepository.createQueryBuilder!.mockReturnValue(mockQueryBuilder as any);
-    })
+      propriedadeRepository.createQueryBuilder!.mockReturnValue(
+        mockQueryBuilder as any,
+      );
+    });
 
     it('should build query with nomePropriedade filter', async () => {
       const filtro: ConsultaPropriedadeRequest = { nomePropriedade: 'Test' };
-      const request = { user: { email: 'test@example.com', roles: ['PRODUTOR'] } } as AuthenticatedRequest;
-      mockUsuarioService.buscarUsuarioPorEmail.mockReturnValue({ roles: [{ nome: 'PRODUTOR'}]});
+      const request = {
+        user: { email: 'test@example.com', roles: ['PRODUTOR'] },
+      } as AuthenticatedRequest;
+      mockUsuarioService.buscarUsuarioPorEmail.mockReturnValue({
+        roles: [{ nome: 'PRODUTOR' }],
+      });
 
       await service.consultaPropriedadeFiltro(filtro, request);
 
-      expect(mockQueryBuilder.where).toHaveBeenCalledWith('pessoa.email = :email', { email: request.user.email });
-      expect(mockQueryBuilder.andWhere).toHaveBeenCalledWith('LOWER(pr.nomePropriedade) LIKE :nomePropriedade', { nomePropriedade: `%${filtro.nomePropriedade!.toLowerCase()}%` });
+      expect(mockQueryBuilder.where).toHaveBeenCalledWith(
+        'pessoa.email = :email',
+        { email: request.user.email },
+      );
+      expect(mockQueryBuilder.andWhere).toHaveBeenCalledWith(
+        'LOWER(pr.nomePropriedade) LIKE :nomePropriedade',
+        { nomePropriedade: `%${filtro.nomePropriedade!.toLowerCase()}%` },
+      );
       expect(mockQueryBuilder.getManyAndCount).toHaveBeenCalled();
-      
     });
 
-     it('should build query with carFederal filter (removing dots)', async () => {
+    it('should build query with carFederal filter (removing dots)', async () => {
       const filtro: ConsultaPropriedadeRequest = { carFederal: '123.456.789' };
-      const request = { user: { email: 'test@example.com', roles: ['PRODUTOR'] } } as AuthenticatedRequest;
-            mockUsuarioService.buscarUsuarioPorEmail.mockReturnValue({ roles: [{ nome: 'PRODUTOR'}]});
+      const request = {
+        user: { email: 'test@example.com', roles: ['PRODUTOR'] },
+      } as AuthenticatedRequest;
+      mockUsuarioService.buscarUsuarioPorEmail.mockReturnValue({
+        roles: [{ nome: 'PRODUTOR' }],
+      });
 
       await service.consultaPropriedadeFiltro(filtro, request);
 
-      expect(mockQueryBuilder.where).toHaveBeenCalledWith('pessoa.email = :email', { email: request.user.email });
-      expect(mockQueryBuilder.andWhere).toHaveBeenCalledWith('pr.carFederal = :carFederal', { carFederal: '123456789' });
+      expect(mockQueryBuilder.where).toHaveBeenCalledWith(
+        'pessoa.email = :email',
+        { email: request.user.email },
+      );
+      expect(mockQueryBuilder.andWhere).toHaveBeenCalledWith(
+        'pr.carFederal = :carFederal',
+        { carFederal: '123456789' },
+      );
       expect(mockQueryBuilder.getManyAndCount).toHaveBeenCalled();
-      
     });
 
-     it('should build query with codigoMunicipio filter', async () => {
+    it('should build query with codigoMunicipio filter', async () => {
       const filtro: ConsultaPropriedadeRequest = { codigoMunicipio: 123 };
-      const request = { user: { email: 'test@example.com', roles: ['PRODUTOR'] } } as AuthenticatedRequest;
-      mockUsuarioService.buscarUsuarioPorEmail.mockReturnValue({ roles: [{ nome: 'PRODUTOR'}]});
+      const request = {
+        user: { email: 'test@example.com', roles: ['PRODUTOR'] },
+      } as AuthenticatedRequest;
+      mockUsuarioService.buscarUsuarioPorEmail.mockReturnValue({
+        roles: [{ nome: 'PRODUTOR' }],
+      });
 
-       await service.consultaPropriedadeFiltro(filtro, request);
+      await service.consultaPropriedadeFiltro(filtro, request);
 
-      expect(mockQueryBuilder.where).toHaveBeenCalledWith('pessoa.email = :email', { email: request.user.email });
-      expect(mockQueryBuilder.andWhere).toHaveBeenCalledWith('pr.codigoMunicipio = :codigoMunicipio', { codigoMunicipio: filtro.codigoMunicipio });
+      expect(mockQueryBuilder.where).toHaveBeenCalledWith(
+        'pessoa.email = :email',
+        { email: request.user.email },
+      );
+      expect(mockQueryBuilder.andWhere).toHaveBeenCalledWith(
+        'pr.codigoMunicipio = :codigoMunicipio',
+        { codigoMunicipio: filtro.codigoMunicipio },
+      );
       expect(mockQueryBuilder.getManyAndCount).toHaveBeenCalled();
     });
 
-     it('should build query with multiple filters for non-analista user', async () => {
+    it('should build query with multiple filters for non-analista user', async () => {
       const filtro: ConsultaPropriedadeRequest = {
         nomePropriedade: 'Test',
         carFederal: '123.456.789',
         codigoMunicipio: 123,
         statusVoucher: true,
       };
-      const request = { user: { email: 'test@example.com', roles: ['PRODUTOR'] } } as AuthenticatedRequest;
-      mockUsuarioService.buscarUsuarioPorEmail.mockReturnValue({ roles: [{ nome: 'PRODUTOR'}]});
+      const request = {
+        user: { email: 'test@example.com', roles: ['PRODUTOR'] },
+      } as AuthenticatedRequest;
+      mockUsuarioService.buscarUsuarioPorEmail.mockReturnValue({
+        roles: [{ nome: 'PRODUTOR' }],
+      });
 
       await service.consultaPropriedadeFiltro(filtro, request);
 
-      expect(mockQueryBuilder.where).toHaveBeenCalledWith('pessoa.email = :email', { email: request.user.email });
-      expect(mockQueryBuilder.andWhere).toHaveBeenCalledWith('LOWER(pr.nomePropriedade) LIKE :nomePropriedade', { nomePropriedade: `%${filtro.nomePropriedade!.toLowerCase()}%` });
-      expect(mockQueryBuilder.andWhere).toHaveBeenCalledWith('pr.carFederal = :carFederal', { carFederal: '123456789' });
-      expect(mockQueryBuilder.andWhere).toHaveBeenCalledWith('pr.codigoMunicipio = :codigoMunicipio', { codigoMunicipio: filtro.codigoMunicipio });
-      expect(mockQueryBuilder.andWhere).toHaveBeenCalledWith('pr.statusVoucher = :statusVoucher', { statusVoucher: filtro.statusVoucher });
+      expect(mockQueryBuilder.where).toHaveBeenCalledWith(
+        'pessoa.email = :email',
+        { email: request.user.email },
+      );
+      expect(mockQueryBuilder.andWhere).toHaveBeenCalledWith(
+        'LOWER(pr.nomePropriedade) LIKE :nomePropriedade',
+        { nomePropriedade: `%${filtro.nomePropriedade!.toLowerCase()}%` },
+      );
+      expect(mockQueryBuilder.andWhere).toHaveBeenCalledWith(
+        'pr.carFederal = :carFederal',
+        { carFederal: '123456789' },
+      );
+      expect(mockQueryBuilder.andWhere).toHaveBeenCalledWith(
+        'pr.codigoMunicipio = :codigoMunicipio',
+        { codigoMunicipio: filtro.codigoMunicipio },
+      );
+      expect(mockQueryBuilder.andWhere).toHaveBeenCalledWith(
+        'pr.statusVoucher = :statusVoucher',
+        { statusVoucher: filtro.statusVoucher },
+      );
       expect(mockQueryBuilder.getManyAndCount).toHaveBeenCalled();
     });
 
     it('should not add email filter if user is an ANALISTA', async () => {
       const filtro: ConsultaPropriedadeRequest = {};
-      const request = { user: { email: 'analista@test.com', roles: ['ANALISTA'] } } as AuthenticatedRequest;
-      mockUsuarioService.buscarUsuarioPorEmail.mockReturnValue({ roles: [{ nome: 'ANALISTA'}]});
-
+      const request = {
+        user: { email: 'analista@test.com', roles: ['ANALISTA'] },
+      } as AuthenticatedRequest;
+      mockUsuarioService.buscarUsuarioPorEmail.mockReturnValue({
+        roles: [{ nome: 'ANALISTA' }],
+      });
 
       await service.consultaPropriedadeFiltro(filtro, request);
 
@@ -392,61 +565,93 @@ describe('PropriedadePremService', () => {
 
     it('should add email filter if user is not an ANALISTA', async () => {
       const filtro: ConsultaPropriedadeRequest = {};
-      const request = { user: { email: 'produtor@test.com', roles: ['PRODUTOR'] } } as AuthenticatedRequest;
-      mockUsuarioService.buscarUsuarioPorEmail.mockReturnValue({ roles: [{ nome: 'PRODUTOR'}]});
+      const request = {
+        user: { email: 'produtor@test.com', roles: ['PRODUTOR'] },
+      } as AuthenticatedRequest;
+      mockUsuarioService.buscarUsuarioPorEmail.mockReturnValue({
+        roles: [{ nome: 'PRODUTOR' }],
+      });
 
       await service.consultaPropriedadeFiltro(filtro, request);
 
-      expect(mockQueryBuilder.where).toHaveBeenCalledWith('pessoa.email = :email', { email: request.user.email });
+      expect(mockQueryBuilder.where).toHaveBeenCalledWith(
+        'pessoa.email = :email',
+        { email: request.user.email },
+      );
       expect(mockQueryBuilder.getManyAndCount).toHaveBeenCalled();
     });
 
     it('should return empty array and 0 total on error', async () => {
       const filtro: ConsultaPropriedadeRequest = {};
-      const request = { user: { email: 'test@example.com', roles: ['PRODUTOR'] } } as AuthenticatedRequest;
-      mockUsuarioService.buscarUsuarioPorEmail.mockReturnValue({ roles: [{ nome: 'PRODUTOR'}]});
-      mockQueryBuilder.getManyAndCount.mockRejectedValue(new Error('Database error'));
+      const request = {
+        user: { email: 'test@example.com', roles: ['PRODUTOR'] },
+      } as AuthenticatedRequest;
+      mockUsuarioService.buscarUsuarioPorEmail.mockReturnValue({
+        roles: [{ nome: 'PRODUTOR' }],
+      });
+      mockQueryBuilder.getManyAndCount.mockRejectedValue(
+        new Error('Database error'),
+      );
 
-      expect(service.consultaPropriedadeFiltro(filtro, request)).rejects.toThrow(new Error('Database error'));
+      expect(
+        service.consultaPropriedadeFiltro(filtro, request),
+      ).rejects.toThrow(new Error('Database error'));
     });
   });
 
   describe('consultaCidadePorNome', () => {
-     const mockQueryBuilder = {
-        where: jest.fn().mockReturnThis(),
-        andWhere: jest.fn().mockReturnThis(),
-        getMany: jest.fn(),
+    const mockQueryBuilder = {
+      where: jest.fn().mockReturnThis(),
+      andWhere: jest.fn().mockReturnThis(),
+      getMany: jest.fn(),
     };
 
     beforeEach(() => {
-        cidadeRepository.createQueryBuilder!.mockReturnValue(mockQueryBuilder as any);
+      cidadeRepository.createQueryBuilder!.mockReturnValue(
+        mockQueryBuilder as any,
+      );
     });
 
     it('should query cities in MT without name filter', async () => {
-        const expectedResult: Cidade[] = [{ id: 1, nome: 'Cuiaba', uf: 'MT' } as Cidade];
-        mockQueryBuilder.getMany.mockResolvedValue(expectedResult);
+      const expectedResult: Cidade[] = [
+        { id: 1, nome: 'Cuiaba', uf: 'MT' } as Cidade,
+      ];
+      mockQueryBuilder.getMany.mockResolvedValue(expectedResult);
 
-        const result = await service.consultaCidadePorNome(); // No name provided
+      const result = await service.consultaCidadePorNome(); // No name provided
 
-        expect(cidadeRepository.createQueryBuilder).toHaveBeenCalledWith('cidade');
-        expect(mockQueryBuilder.where).toHaveBeenCalledWith('cidade.uf  = :uf', { uf: 'MT' });
-        expect(mockQueryBuilder.andWhere).not.toHaveBeenCalled();
-        expect(mockQueryBuilder.getMany).toHaveBeenCalled();
-        expect(result).toEqual(expectedResult);
+      expect(cidadeRepository.createQueryBuilder).toHaveBeenCalledWith(
+        'cidade',
+      );
+      expect(mockQueryBuilder.where).toHaveBeenCalledWith('cidade.uf  = :uf', {
+        uf: 'MT',
+      });
+      expect(mockQueryBuilder.andWhere).not.toHaveBeenCalled();
+      expect(mockQueryBuilder.getMany).toHaveBeenCalled();
+      expect(result).toEqual(expectedResult);
     });
 
     it('should query cities in MT with name filter (case-insensitive, accent-insensitive)', async () => {
-        const nome = 'Cuiabá';
-        const expectedResult: Cidade[] = [{ id: 1, nome: 'Cuiaba', uf: 'MT' } as Cidade];
-        mockQueryBuilder.getMany.mockResolvedValue(expectedResult);
+      const nome = 'Cuiabá';
+      const expectedResult: Cidade[] = [
+        { id: 1, nome: 'Cuiaba', uf: 'MT' } as Cidade,
+      ];
+      mockQueryBuilder.getMany.mockResolvedValue(expectedResult);
 
-        const result = await service.consultaCidadePorNome(nome);
+      const result = await service.consultaCidadePorNome(nome);
 
-        expect(cidadeRepository.createQueryBuilder).toHaveBeenCalledWith('cidade');
-        expect(mockQueryBuilder.where).toHaveBeenCalledWith('cidade.uf  = :uf', { uf: 'MT' });
-        expect(mockQueryBuilder.andWhere).toHaveBeenCalledWith('LOWER(unaccent(cidade.nome)) LIKE :nome', { nome: `cuiaba` });
-        expect(mockQueryBuilder.getMany).toHaveBeenCalled();
-        expect(result).toEqual(expectedResult);
+      expect(cidadeRepository.createQueryBuilder).toHaveBeenCalledWith(
+        'cidade',
+      );
+      expect(mockQueryBuilder.where).toHaveBeenCalledWith('cidade.uf  = :uf', {
+        uf: 'MT',
+      });
+      expect(mockQueryBuilder.andWhere).toHaveBeenCalledWith(
+        'LOWER(unaccent(cidade.nome)) LIKE :nome',
+        { nome: `cuiaba` },
+      );
+      expect(mockQueryBuilder.getMany).toHaveBeenCalled();
+      expect(result).toEqual(expectedResult);
     });
   });
 
@@ -454,76 +659,87 @@ describe('PropriedadePremService', () => {
     it('should call findOne with correct id and relations', async () => {
       const id = 1;
       const expectedResult = { id: 1, nomePropriedade: 'Teste' } as Propriedade;
-      
+
       propriedadeRepository.findOne!.mockResolvedValue(expectedResult);
       const request = { user: { roles: ['ADMIN'] } } as AuthenticatedRequest;
       const result = await service.consultaPropriedadePorId(id, request);
       expect(propriedadeRepository.findOne).toHaveBeenCalledWith({
         where: { id, proprietarios: undefined },
         relations: [
-        'proprietarios',
-        'endereco',
-        'cidade',
-        'solicitacaoElegibilidade',
-        'proprietarios.pessoa',
-        'documentos',
-        'documentos.usuarioUpload',
-        'analista',
-        'retornoAnalises',
-        'retornoAnalises.documentos',
-        'retornoAnalises.deteccoes',
-        'retornoAnalises.contestacaoAutorizacaoSupressao',
-        'retornoAnalises.contestacaoAutorizacaoSupressao.responsavelTecnico',
-        'retornoAnalises.contestacaoAutorizacaoSupressao.documentos',
-        'retornoAnalises.contestacaoAutorizacaoSupressao.autorizacoesSupressoes',
-        'retornoAnalises.contestacaoAutorizacaoSupressao.autorizacoesSupressoes.tipo',
-        'retornoAnalises.contestacaoAutorizacaoSupressao.autorizacoesSupressoes.orgaoEmissor',
-        'retornoAnalises.contestacaoAutorizacaoSupressao.autorizacoesSupressoes.documentos',
-        'retornoAnalises.contestacaoLaudo',
-        'retornoAnalises.contestacaoLaudo.responsavelTecnico',
-        'retornoAnalises.contestacaoLaudo.documentos',
-        'territorios',
-        'vouches',
-        'retornoAnalises.planoAdequacao',
-        'retornoAnalises.planoAdequacao.responsavelTecnico',
-        'retornoAnalises.planoAdequacao.documentos',
-        'atividadePrincipal',
-        'cicloProducao'
-      ]
+          'proprietarios',
+          'endereco',
+          'cidade',
+          'solicitacaoElegibilidade',
+          'proprietarios.pessoa',
+          'documentos',
+          'documentos.usuarioUpload',
+          'analista',
+          'retornoAnalises',
+          'retornoAnalises.documentos',
+          'retornoAnalises.deteccoes',
+          'retornoAnalises.contestacaoAutorizacaoSupressao',
+          'retornoAnalises.contestacaoAutorizacaoSupressao.responsavelTecnico',
+          'retornoAnalises.contestacaoAutorizacaoSupressao.documentos',
+          'retornoAnalises.contestacaoAutorizacaoSupressao.autorizacoesSupressoes',
+          'retornoAnalises.contestacaoAutorizacaoSupressao.autorizacoesSupressoes.tipo',
+          'retornoAnalises.contestacaoAutorizacaoSupressao.autorizacoesSupressoes.orgaoEmissor',
+          'retornoAnalises.contestacaoAutorizacaoSupressao.autorizacoesSupressoes.documentos',
+          'retornoAnalises.contestacaoLaudo',
+          'retornoAnalises.contestacaoLaudo.responsavelTecnico',
+          'retornoAnalises.contestacaoLaudo.documentos',
+          'territorios',
+          'vouches',
+          'retornoAnalises.planoAdequacao',
+          'retornoAnalises.planoAdequacao.responsavelTecnico',
+          'retornoAnalises.planoAdequacao.documentos',
+          'atividadePrincipal',
+          'cicloProducao',
+        ],
       });
       expect(result).toEqual(expectedResult);
     });
   });
 
   describe('consultaPorProprietario', () => {
-     const mockQueryBuilder = {
-        leftJoinAndSelect: jest.fn().mockReturnThis(),
-        where: jest.fn().mockReturnThis(),
-        andWhere: jest.fn().mockReturnThis(),
-        getMany: jest.fn(),
+    const mockQueryBuilder = {
+      leftJoinAndSelect: jest.fn().mockReturnThis(),
+      where: jest.fn().mockReturnThis(),
+      andWhere: jest.fn().mockReturnThis(),
+      getMany: jest.fn(),
     };
 
     beforeEach(() => {
-        propriedadeRepository.createQueryBuilder!.mockReturnValue(mockQueryBuilder as any);
+      propriedadeRepository.createQueryBuilder!.mockReturnValue(
+        mockQueryBuilder as any,
+      );
     });
 
     it('should throw BadRequestException if email is null or empty', async () => {
-      await expect(service.consultaPorProprietario(null as any))
-        .rejects.toThrow(new BadRequestException('Nenhum email informado.'));
-      await expect(service.consultaPorProprietario(''))
-        .rejects.toThrow(new BadRequestException('Nenhum email informado.'));
+      await expect(
+        service.consultaPorProprietario(null as any),
+      ).rejects.toThrow(new BadRequestException('Nenhum email informado.'));
+      await expect(service.consultaPorProprietario('')).rejects.toThrow(
+        new BadRequestException('Nenhum email informado.'),
+      );
     });
 
     it('should build query with email filter', async () => {
       const email = 'test@example.com';
-      const expectedResult: Propriedade[] = [{ id: 1, nomePropriedade: 'Teste' } as Propriedade];
+      const expectedResult: Propriedade[] = [
+        { id: 1, nomePropriedade: 'Teste' } as Propriedade,
+      ];
       mockQueryBuilder.getMany.mockResolvedValue(expectedResult);
 
       const result = await service.consultaPorProprietario(email);
 
-      expect(propriedadeRepository.createQueryBuilder).toHaveBeenCalledWith('pr');
+      expect(propriedadeRepository.createQueryBuilder).toHaveBeenCalledWith(
+        'pr',
+      );
       expect(mockQueryBuilder.leftJoinAndSelect).toHaveBeenCalledTimes(9);
-      expect(mockQueryBuilder.where).toHaveBeenCalledWith('pessoa.email = :email', { email: email });
+      expect(mockQueryBuilder.where).toHaveBeenCalledWith(
+        'pessoa.email = :email',
+        { email: email },
+      );
       expect(mockQueryBuilder.getMany).toHaveBeenCalled();
       expect(result).toEqual(expectedResult);
     });
@@ -534,8 +750,12 @@ describe('PropriedadePremService', () => {
     const userEmail = 'owner@test.com';
     const analistaEmail = 'analista@test.com';
     const otherEmail = 'other@test.com';
-    const mockFiles: Express.Multer.File[] = [{ originalname: 'doc1.pdf' } as any];
-    const mockParametros: ParametrosArquivo[] = [{ nome: 'doc1.pdf', tipo: 'TEST_TIPO' }];
+    const mockFiles: Express.Multer.File[] = [
+      { originalname: 'doc1.pdf' } as any,
+    ];
+    const mockParametros: ParametrosArquivo[] = [
+      { nome: 'doc1.pdf', tipo: 'TEST_TIPO' },
+    ];
     const mockUsuarioProdutor = { id: 1, email: userEmail };
     const mockUsuarioAnalista = { id: 2, email: analistaEmail };
     const mockUsuarioOutro = { id: 3, email: otherEmail };
@@ -543,73 +763,127 @@ describe('PropriedadePremService', () => {
     const mockPropriedadeFound = {
       id: idPropriedade,
       nomePropriedade: 'Fazenda Teste',
-      proprietarios: [{ pessoa: { nome: 'Produtor Teste', email: userEmail } } as Proprietario],
-      analista: { id: 2, email: analistaEmail, pessoa: { nome: 'Analista Teste' } }
+      proprietarios: [
+        {
+          pessoa: { nome: 'Produtor Teste', email: userEmail },
+        } as Proprietario,
+      ],
+      analista: {
+        id: 2,
+        email: analistaEmail,
+        pessoa: { nome: 'Analista Teste' },
+      },
     } as Propriedade;
 
     const mockPropriedadeNoMatch = {
       id: idPropriedade,
-      proprietarios: [{ pessoa: { email: 'another@test.com' } } as Proprietario],
-      analista: { id: 99, email: 'anotheranalista@test.com' }
+      proprietarios: [
+        { pessoa: { email: 'another@test.com' } } as Proprietario,
+      ],
+      analista: { id: 99, email: 'anotheranalista@test.com' },
     } as Propriedade;
 
-    const mockUploadResult = [{ filename: 'uuid-doc1.pdf', url: 'http://s3/uuid-doc1.pdf', originalName: 'doc1.pdf' }];
-    const mockSavedDocs = [{ 
-      id: 100, 
-      nomeArquivo: 'uuid-doc1.pdf', 
-      urlArquivo: 'http://s3/uuid-doc1.pdf', 
-      tipo: 'TEST_TIPO',
-      nomeArquivoOriginal: 'doc1.pdf'
-    } as Documento];
+    const mockUploadResult = [
+      {
+        filename: 'uuid-doc1.pdf',
+        url: 'http://s3/uuid-doc1.pdf',
+        originalName: 'doc1.pdf',
+      },
+    ];
+    const mockSavedDocs = [
+      {
+        id: 100,
+        nomeArquivo: 'uuid-doc1.pdf',
+        urlArquivo: 'http://s3/uuid-doc1.pdf',
+        tipo: 'TEST_TIPO',
+        nomeArquivoOriginal: 'doc1.pdf',
+      } as Documento,
+    ];
 
     it('should allow owner to upload files, save documents, emit event and return saved documents', async () => {
       propriedadeRepository.findOne!.mockResolvedValue(mockPropriedadeFound);
-      mockUsuarioService.buscarUsuarioPorEmail.mockResolvedValue(mockUsuarioProdutor);
+      mockUsuarioService.buscarUsuarioPorEmail.mockResolvedValue(
+        mockUsuarioProdutor,
+      );
       documentoUploadService.uploadFiles.mockResolvedValue(mockUploadResult);
       documentoRepository.save!.mockResolvedValue(mockSavedDocs);
 
-      const result = await service.uploadDocumentos(idPropriedade, userEmail, mockFiles, mockParametros);
+      const result = await service.uploadDocumentos(
+        idPropriedade,
+        userEmail,
+        mockFiles,
+        mockParametros,
+      );
 
       expect(propriedadeRepository.findOne).toHaveBeenCalledWith({
         where: { id: idPropriedade },
-        relations: ["proprietarios", "proprietarios.pessoa", "analista", "analista.pessoa"]
+        relations: [
+          'proprietarios',
+          'proprietarios.pessoa',
+          'analista',
+          'analista.pessoa',
+        ],
       });
-      expect(mockUsuarioService.buscarUsuarioPorEmail).toHaveBeenCalledWith(userEmail);
-      expect(documentoUploadService.uploadFiles).toHaveBeenCalledWith(mockFiles);
-      expect(documentoRepository.save).toHaveBeenCalledWith([{
-        idUsuarioUpload: mockUsuarioProdutor.id,
-        nomeArquivo: mockUploadResult[0].filename,
-        nomeArquivoOriginal: mockUploadResult[0].originalName,
-        urlArquivo: mockUploadResult[0].url,
-        propriedades: [mockPropriedadeFound],
-        tipo: mockParametros[0].tipo,
-      }]);
+      expect(mockUsuarioService.buscarUsuarioPorEmail).toHaveBeenCalledWith(
+        userEmail,
+      );
+      expect(documentoUploadService.uploadFiles).toHaveBeenCalledWith(
+        mockFiles,
+      );
+      expect(documentoRepository.save).toHaveBeenCalledWith([
+        {
+          idUsuarioUpload: mockUsuarioProdutor.id,
+          nomeArquivo: mockUploadResult[0].filename,
+          nomeArquivoOriginal: mockUploadResult[0].originalName,
+          urlArquivo: mockUploadResult[0].url,
+          propriedades: [mockPropriedadeFound],
+          tipo: mockParametros[0].tipo,
+        },
+      ]);
       expect(mockEventEmitter.emitAsync).toHaveBeenCalled();
       expect(result).toEqual(mockSavedDocs);
     });
 
     it('should allow assigned analyst to upload files, save documents, emit event and return saved documents', async () => {
       propriedadeRepository.findOne!.mockResolvedValue(mockPropriedadeFound);
-      mockUsuarioService.buscarUsuarioPorEmail.mockResolvedValue(mockUsuarioAnalista);
+      mockUsuarioService.buscarUsuarioPorEmail.mockResolvedValue(
+        mockUsuarioAnalista,
+      );
       documentoUploadService.uploadFiles.mockResolvedValue(mockUploadResult);
       documentoRepository.save!.mockResolvedValue(mockSavedDocs);
 
-      const result = await service.uploadDocumentos(idPropriedade, analistaEmail, mockFiles, mockParametros);
+      const result = await service.uploadDocumentos(
+        idPropriedade,
+        analistaEmail,
+        mockFiles,
+        mockParametros,
+      );
 
       expect(propriedadeRepository.findOne).toHaveBeenCalledWith({
         where: { id: idPropriedade },
-        relations: ["proprietarios", "proprietarios.pessoa", "analista", "analista.pessoa"]
+        relations: [
+          'proprietarios',
+          'proprietarios.pessoa',
+          'analista',
+          'analista.pessoa',
+        ],
       });
-      expect(mockUsuarioService.buscarUsuarioPorEmail).toHaveBeenCalledWith(analistaEmail);
-      expect(documentoUploadService.uploadFiles).toHaveBeenCalledWith(mockFiles);
-      expect(documentoRepository.save).toHaveBeenCalledWith([{
-        idUsuarioUpload: mockUsuarioAnalista.id,
-        nomeArquivo: mockUploadResult[0].filename,
-        nomeArquivoOriginal: mockUploadResult[0].originalName,
-        urlArquivo: mockUploadResult[0].url,
-        propriedades: [mockPropriedadeFound],
-        tipo: mockParametros[0].tipo
-      }]);
+      expect(mockUsuarioService.buscarUsuarioPorEmail).toHaveBeenCalledWith(
+        analistaEmail,
+      );
+      expect(documentoUploadService.uploadFiles).toHaveBeenCalledWith(
+        mockFiles,
+      );
+      expect(documentoRepository.save).toHaveBeenCalledWith([
+        {
+          idUsuarioUpload: mockUsuarioAnalista.id,
+          nomeArquivo: mockUploadResult[0].filename,
+          nomeArquivoOriginal: mockUploadResult[0].originalName,
+          urlArquivo: mockUploadResult[0].url,
+          propriedades: [mockPropriedadeFound],
+          tipo: mockParametros[0].tipo,
+        },
+      ]);
       expect(mockEventEmitter.emitAsync).toHaveBeenCalled();
       expect(result).toEqual(mockSavedDocs);
     });
@@ -617,8 +891,14 @@ describe('PropriedadePremService', () => {
     it('should throw BadRequestException if property not found', async () => {
       propriedadeRepository.findOne!.mockResolvedValue(null);
 
-      await expect(service.uploadDocumentos(idPropriedade, userEmail, mockFiles, mockParametros))
-        .rejects.toThrow(new BadRequestException("Propriedade não encontrada"));
+      await expect(
+        service.uploadDocumentos(
+          idPropriedade,
+          userEmail,
+          mockFiles,
+          mockParametros,
+        ),
+      ).rejects.toThrow(new BadRequestException('Propriedade não encontrada'));
 
       expect(mockUsuarioService.buscarUsuarioPorEmail).not.toHaveBeenCalled();
       expect(documentoUploadService.uploadFiles).not.toHaveBeenCalled();
@@ -626,39 +906,68 @@ describe('PropriedadePremService', () => {
     });
 
     it('should throw BadRequestException if user is not owner or assigned analyst', async () => {
-       propriedadeRepository.findOne!.mockResolvedValue(mockPropriedadeNoMatch);
-        mockUsuarioService.buscarUsuarioPorEmail.mockResolvedValue(mockUsuarioOutro);
+      propriedadeRepository.findOne!.mockResolvedValue(mockPropriedadeNoMatch);
+      mockUsuarioService.buscarUsuarioPorEmail.mockResolvedValue(
+        mockUsuarioOutro,
+      );
 
-      await expect(service.uploadDocumentos(idPropriedade, otherEmail, mockFiles, mockParametros))
-        .rejects.toThrow(new BadRequestException("Sem permissão para subir documentos para esta propriedade"));
+      await expect(
+        service.uploadDocumentos(
+          idPropriedade,
+          otherEmail,
+          mockFiles,
+          mockParametros,
+        ),
+      ).rejects.toThrow(
+        new BadRequestException(
+          'Sem permissão para subir documentos para esta propriedade',
+        ),
+      );
 
-      expect(mockUsuarioService.buscarUsuarioPorEmail).toHaveBeenCalledWith(otherEmail);
+      expect(mockUsuarioService.buscarUsuarioPorEmail).toHaveBeenCalledWith(
+        otherEmail,
+      );
       expect(documentoUploadService.uploadFiles).not.toHaveBeenCalled();
       expect(documentoRepository.save).not.toHaveBeenCalled();
     });
 
     it('should throw InternalServerErrorException if upload service fails', async () => {
       propriedadeRepository.findOne!.mockResolvedValue(mockPropriedadeFound);
-      mockUsuarioService.buscarUsuarioPorEmail.mockResolvedValue(mockUsuarioProdutor);
+      mockUsuarioService.buscarUsuarioPorEmail.mockResolvedValue(
+        mockUsuarioProdutor,
+      );
       const uploadError = new Error('S3 Error');
       documentoUploadService.uploadFiles.mockRejectedValue(uploadError);
 
-      await expect(service.uploadDocumentos(idPropriedade, userEmail, mockFiles, mockParametros))
-        .rejects.toThrow(InternalServerErrorException);
+      await expect(
+        service.uploadDocumentos(
+          idPropriedade,
+          userEmail,
+          mockFiles,
+          mockParametros,
+        ),
+      ).rejects.toThrow(InternalServerErrorException);
 
       expect(documentoRepository.save).not.toHaveBeenCalled();
     });
 
-     it('should throw InternalServerErrorException if document save fails', async () => {
+    it('should throw InternalServerErrorException if document save fails', async () => {
       propriedadeRepository.findOne!.mockResolvedValue(mockPropriedadeFound);
-      mockUsuarioService.buscarUsuarioPorEmail.mockResolvedValue(mockUsuarioProdutor);
+      mockUsuarioService.buscarUsuarioPorEmail.mockResolvedValue(
+        mockUsuarioProdutor,
+      );
       documentoUploadService.uploadFiles.mockResolvedValue(mockUploadResult);
       const saveError = new Error('DB Save Error');
       documentoRepository.save!.mockRejectedValue(saveError);
 
-      await expect(service.uploadDocumentos(idPropriedade, userEmail, mockFiles, mockParametros))
-        .rejects.toThrow(InternalServerErrorException);
-
+      await expect(
+        service.uploadDocumentos(
+          idPropriedade,
+          userEmail,
+          mockFiles,
+          mockParametros,
+        ),
+      ).rejects.toThrow(InternalServerErrorException);
     });
   });
 
@@ -666,13 +975,23 @@ describe('PropriedadePremService', () => {
     const idPropriedade = 1;
 
     it('should soft delete a property by changing its status to Inativa', async () => {
-      const mockPropriedade = { id: idPropriedade, status: 'Ativa', etapa: 'Cadastro' } as Propriedade;
+      const mockPropriedade = {
+        id: idPropriedade,
+        status: 'Ativa',
+        etapa: 'Cadastro',
+      } as Propriedade;
       propriedadeRepository.findOneBy!.mockResolvedValue(mockPropriedade);
-      propriedadeRepository.save!.mockResolvedValue({ ...mockPropriedade, status: StatusEtapas.Desativada.Inativa, etapa: Etapas.Desativada });
+      propriedadeRepository.save!.mockResolvedValue({
+        ...mockPropriedade,
+        status: StatusEtapas.Desativada.Inativa,
+        etapa: Etapas.Desativada,
+      });
 
       await service.deletar(idPropriedade);
 
-      expect(propriedadeRepository.findOneBy).toHaveBeenCalledWith({ id: idPropriedade });
+      expect(propriedadeRepository.findOneBy).toHaveBeenCalledWith({
+        id: idPropriedade,
+      });
       expect(propriedadeRepository.save).toHaveBeenCalledWith({
         ...mockPropriedade,
         status: StatusEtapas.Desativada.Inativa,
@@ -683,21 +1002,31 @@ describe('PropriedadePremService', () => {
     it('should throw NegocioException if property is not found', async () => {
       propriedadeRepository.findOneBy!.mockResolvedValue(null);
 
-      await expect(service.deletar(idPropriedade))
-        .rejects.toThrow(new NegocioException(422, 'Propriedade não encontrada'));
+      await expect(service.deletar(idPropriedade)).rejects.toThrow(
+        new NegocioException(422, 'Propriedade não encontrada'),
+      );
 
-      expect(propriedadeRepository.findOneBy).toHaveBeenCalledWith({ id: idPropriedade });
+      expect(propriedadeRepository.findOneBy).toHaveBeenCalledWith({
+        id: idPropriedade,
+      });
       expect(propriedadeRepository.save).not.toHaveBeenCalled();
     });
 
     it('should throw BadRequestException if property is already inactive', async () => {
-      const mockPropriedade = { id: idPropriedade, status: 'Inativa', etapa: 'Desativada' } as Propriedade;
+      const mockPropriedade = {
+        id: idPropriedade,
+        status: 'Inativa',
+        etapa: 'Desativada',
+      } as Propriedade;
       propriedadeRepository.findOneBy!.mockResolvedValue(mockPropriedade);
 
-      await expect(service.deletar(idPropriedade))
-        .rejects.toThrow(new BadRequestException('Propriedade já inativada.'));
+      await expect(service.deletar(idPropriedade)).rejects.toThrow(
+        new BadRequestException('Propriedade já inativada.'),
+      );
 
-      expect(propriedadeRepository.findOneBy).toHaveBeenCalledWith({ id: idPropriedade });
+      expect(propriedadeRepository.findOneBy).toHaveBeenCalledWith({
+        id: idPropriedade,
+      });
       expect(propriedadeRepository.save).not.toHaveBeenCalled();
     });
   });
@@ -710,7 +1039,10 @@ describe('PropriedadePremService', () => {
       termoAdequacaoAceito: false,
       proprietarios: [{ pessoa: { email: 'test@test.com' } }],
       cidade: { id: 1, nome: 'Cuiaba', uf: 'MT' },
-      endereco: { logradouro: 'Rua Teste', numero: '123' } as unknown as Endereco,
+      endereco: {
+        logradouro: 'Rua Teste',
+        numero: '123',
+      } as unknown as Endereco,
       analise: { deteccoes: [] },
     } as unknown as Propriedade;
 
@@ -718,33 +1050,51 @@ describe('PropriedadePremService', () => {
       const idTermoCompromisso = 'uuid-termo';
       propriedadeRepository.findOne!.mockResolvedValue(mockPropriedade);
       pdfService.generate.mockResolvedValue(Buffer.from('pdf-content'));
-      assinaturaService.enviarDocumentoParaAssinatura.mockResolvedValue(idTermoCompromisso);
-      propriedadeRepository.save!.mockImplementation(p => Promise.resolve(p));
+      assinaturaService.enviarDocumentoParaAssinatura.mockResolvedValue(
+        idTermoCompromisso,
+      );
+      propriedadeRepository.save!.mockImplementation((p) => Promise.resolve(p));
 
       // Mock a chamada interna para uploadDocumentos
       jest.spyOn(service, 'uploadDocumentos').mockResolvedValue([]);
 
       const result = await service.aceitarTermoAdequacao(idPropriedade);
 
-      expect(propriedadeRepository.findOne).toHaveBeenCalledWith({ where: { id: idPropriedade }, relations: expect.any(Array) });
+      expect(propriedadeRepository.findOne).toHaveBeenCalledWith({
+        where: { id: idPropriedade },
+        relations: expect.any(Array),
+      });
       expect(pdfService.generate).toHaveBeenCalledTimes(2); // DCS e Termo
-      expect(assinaturaService.enviarDocumentoParaAssinatura).toHaveBeenCalled();
-      expect(propriedadeRepository.save).toHaveBeenCalledWith(expect.objectContaining({
-        idTermoCompromisso,
-        etapa: Etapas.Termo,
-        status: StatusEtapas[Etapas.Termo].Enviado,
-      }));
+      expect(
+        assinaturaService.enviarDocumentoParaAssinatura,
+      ).toHaveBeenCalled();
+      expect(propriedadeRepository.save).toHaveBeenCalledWith(
+        expect.objectContaining({
+          idTermoCompromisso,
+          etapa: Etapas.Termo,
+          status: StatusEtapas[Etapas.Termo].Enviado,
+        }),
+      );
       expect(result.idTermoCompromisso).toBe(idTermoCompromisso);
     });
 
     it('should throw BadRequestException if property is not found', async () => {
       propriedadeRepository.findOne!.mockResolvedValue(null);
-      await expect(service.aceitarTermoAdequacao(idPropriedade)).rejects.toThrow(new BadRequestException('Propriedade não encontrada.'));
+      await expect(
+        service.aceitarTermoAdequacao(idPropriedade),
+      ).rejects.toThrow(new BadRequestException('Propriedade não encontrada.'));
     });
 
     it('should throw BadRequestException if term is already sent or signed', async () => {
-      propriedadeRepository.findOne!.mockResolvedValue({ ...mockPropriedade, idTermoCompromisso: 'existing-uuid' });
-      await expect(service.aceitarTermoAdequacao(idPropriedade)).rejects.toThrow(new BadRequestException('Termo de adequação já enviado ou assinado.'));
+      propriedadeRepository.findOne!.mockResolvedValue({
+        ...mockPropriedade,
+        idTermoCompromisso: 'existing-uuid',
+      });
+      await expect(
+        service.aceitarTermoAdequacao(idPropriedade),
+      ).rejects.toThrow(
+        new BadRequestException('Termo de adequação já enviado ou assinado.'),
+      );
     });
   });
 
@@ -759,26 +1109,39 @@ describe('PropriedadePremService', () => {
 
     it('should mark term as signed successfully', async () => {
       propriedadeRepository.findOne!.mockResolvedValue(mockPropriedade);
-      propriedadeRepository.save!.mockImplementation(p => Promise.resolve(p));
+      propriedadeRepository.save!.mockImplementation((p) => Promise.resolve(p));
 
       await service.termoCompromissoAssinado(idTermoCompromisso, email);
 
-      expect(propriedadeRepository.findOne).toHaveBeenCalledWith({ where: { idTermoCompromisso, proprietarios: { pessoa: { email } } } });
-      expect(propriedadeRepository.save).toHaveBeenCalledWith(expect.objectContaining({
-        termoAdequacaoAceito: true,
-        etapa: Etapas.Termo,
-        status: StatusEtapas[Etapas.Termo].Assinado,
-      }));
+      expect(propriedadeRepository.findOne).toHaveBeenCalledWith({
+        where: { idTermoCompromisso, proprietarios: { pessoa: { email } } },
+      });
+      expect(propriedadeRepository.save).toHaveBeenCalledWith(
+        expect.objectContaining({
+          termoAdequacaoAceito: true,
+          etapa: Etapas.Termo,
+          status: StatusEtapas[Etapas.Termo].Assinado,
+        }),
+      );
     });
 
     it('should throw BadRequestException if property is not found', async () => {
       propriedadeRepository.findOne!.mockResolvedValue(null);
-      await expect(service.termoCompromissoAssinado(idTermoCompromisso, email)).rejects.toThrow(new BadRequestException('Propriedade não encontrada.'));
+      await expect(
+        service.termoCompromissoAssinado(idTermoCompromisso, email),
+      ).rejects.toThrow(new BadRequestException('Propriedade não encontrada.'));
     });
 
     it('should throw BadRequestException if term is already accepted', async () => {
-      propriedadeRepository.findOne!.mockResolvedValue({ ...mockPropriedade, termoAdequacaoAceito: true });
-      await expect(service.termoCompromissoAssinado(idTermoCompromisso, email)).rejects.toThrow(new BadRequestException('Termo de compromisso já aceito.'));
+      propriedadeRepository.findOne!.mockResolvedValue({
+        ...mockPropriedade,
+        termoAdequacaoAceito: true,
+      });
+      await expect(
+        service.termoCompromissoAssinado(idTermoCompromisso, email),
+      ).rejects.toThrow(
+        new BadRequestException('Termo de compromisso já aceito.'),
+      );
     });
   });
 
@@ -795,12 +1158,18 @@ describe('PropriedadePremService', () => {
     } as unknown as Propriedade;
 
     it('should throw BadRequestException if no parameter is provided', async () => {
-      await expect(service.validarDCS()).rejects.toThrow(new BadRequestException('É preciso passar pelo menos um parâmetro: idPropriedade ou carFederal'));
+      await expect(service.validarDCS()).rejects.toThrow(
+        new BadRequestException(
+          'É preciso passar pelo menos um parâmetro: idPropriedade ou carFederal',
+        ),
+      );
     });
 
     it('should throw BadRequestException if property is not found', async () => {
       propriedadeRepository.findOne!.mockResolvedValue(null);
-      await expect(service.validarDCS(idPropriedade)).rejects.toThrow(new BadRequestException('Propriedade não encontrada.'));
+      await expect(service.validarDCS(idPropriedade)).rejects.toThrow(
+        new BadRequestException('Propriedade não encontrada.'),
+      );
     });
 
     it('should return status APTO when all conditions are met', async () => {
@@ -821,13 +1190,19 @@ describe('PropriedadePremService', () => {
 
       expect(result.status).toBe(DCSStatus.Apto);
       expect(result.id).toBe(idPropriedade);
-      expect(propriedadeRepository.findOne).toHaveBeenCalledWith({ where: [{ id: idPropriedade }, { carFederal: undefined }], relations: expect.any(Array) });
+      expect(propriedadeRepository.findOne).toHaveBeenCalledWith({
+        where: [{ id: idPropriedade }, { carFederal: undefined }],
+        relations: expect.any(Array),
+      });
       expect(autoVistoriaRepository.findOne).toHaveBeenCalledWith({
         where: { propriedade: { id: idPropriedade } },
-        order: { dataTermino: 'DESC' }
+        order: { dataTermino: 'DESC' },
       });
       expect(pagamentoMultaRepository.findOne).toHaveBeenCalledWith({
-        where: { propriedade: { id: idPropriedade }, status: StatusPagamento.VENCIDO },
+        where: {
+          propriedade: { id: idPropriedade },
+          status: StatusPagamento.VENCIDO,
+        },
       });
     });
 
@@ -931,7 +1306,7 @@ describe('PropriedadePremService', () => {
       const mockPropriedade = {
         ...mockPropriedadeBase,
         statusVoucher: false,
-        documentos: [{ tipo: 'DCS', urlArquivo: dcsUrl }]
+        documentos: [{ tipo: 'DCS', urlArquivo: dcsUrl }],
       } as Propriedade;
 
       propriedadeRepository.findOne!.mockResolvedValue(mockPropriedade);
@@ -954,17 +1329,24 @@ describe('PropriedadePremService', () => {
   describe('pegarLinkDocumentoTermoCompromissoAssinado', () => {
     const uuid = 'test-uuid';
     const urlTermo = 'http://example.com/termo.pdf';
-    const mockPropriedade = { id: 1, urlTermoCompromisso: null } as unknown as Propriedade;
+    const mockPropriedade = {
+      id: 1,
+      urlTermoCompromisso: null,
+    } as unknown as Propriedade;
 
     it('should get document link, find property, update it, and save', async () => {
       assinaturaService.pegarLinkDocumentoAssinado.mockResolvedValue(urlTermo);
       propriedadeRepository.findOne!.mockResolvedValue(mockPropriedade);
-      propriedadeRepository.save!.mockImplementation(p => Promise.resolve(p));
+      propriedadeRepository.save!.mockImplementation((p) => Promise.resolve(p));
 
       await service.pegarLinkDocumentoTermoCompromissoAssinado(uuid);
 
-      expect(assinaturaService.pegarLinkDocumentoAssinado).toHaveBeenCalledWith(uuid);
-      expect(propriedadeRepository.findOne).toHaveBeenCalledWith({ where: { idTermoCompromisso: uuid } });
+      expect(assinaturaService.pegarLinkDocumentoAssinado).toHaveBeenCalledWith(
+        uuid,
+      );
+      expect(propriedadeRepository.findOne).toHaveBeenCalledWith({
+        where: { idTermoCompromisso: uuid },
+      });
       expect(propriedadeRepository.save).toHaveBeenCalledWith({
         ...mockPropriedade,
         urlTermoCompromisso: urlTermo,
@@ -975,11 +1357,16 @@ describe('PropriedadePremService', () => {
       assinaturaService.pegarLinkDocumentoAssinado.mockResolvedValue(urlTermo);
       propriedadeRepository.findOne!.mockResolvedValue(null);
 
-      await expect(service.pegarLinkDocumentoTermoCompromissoAssinado(uuid))
-        .rejects.toThrow(new BadRequestException('Propriedade não encontrada.'));
+      await expect(
+        service.pegarLinkDocumentoTermoCompromissoAssinado(uuid),
+      ).rejects.toThrow(new BadRequestException('Propriedade não encontrada.'));
 
-      expect(assinaturaService.pegarLinkDocumentoAssinado).toHaveBeenCalledWith(uuid);
-      expect(propriedadeRepository.findOne).toHaveBeenCalledWith({ where: { idTermoCompromisso: uuid } });
+      expect(assinaturaService.pegarLinkDocumentoAssinado).toHaveBeenCalledWith(
+        uuid,
+      );
+      expect(propriedadeRepository.findOne).toHaveBeenCalledWith({
+        where: { idTermoCompromisso: uuid },
+      });
       expect(propriedadeRepository.save).not.toHaveBeenCalled();
     });
   });
@@ -999,7 +1386,7 @@ describe('PropriedadePremService', () => {
           'endereco',
           'cidade',
           'proprietarios.pessoa',
-          'pagamentoMultas'
+          'pagamentoMultas',
         ],
       });
       expect(result).toEqual(expectedResult);
@@ -1010,13 +1397,16 @@ describe('PropriedadePremService', () => {
     it('should call usuarioService.buscarUsuarioPorEmail and return the user', async () => {
       const email = 'test@example.com';
       const expectedUser = { email, nome: 'Test User' };
-      mockUsuarioService.buscarUsuarioPorEmail.mockResolvedValue(expectedUser as any);
+      mockUsuarioService.buscarUsuarioPorEmail.mockResolvedValue(
+        expectedUser as any,
+      );
 
       const result = await service.consultaUsuario(email);
 
-      expect(mockUsuarioService.buscarUsuarioPorEmail).toHaveBeenCalledWith(email);
+      expect(mockUsuarioService.buscarUsuarioPorEmail).toHaveBeenCalledWith(
+        email,
+      );
       expect(result).toEqual(expectedUser);
     });
   });
-
 });

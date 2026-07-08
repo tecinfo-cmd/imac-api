@@ -385,7 +385,7 @@ export class AgrotoolsService {
     }
 
     const data: ImagemTerritorio = await axios
-      .post(`${this.url}/Image/generate-image/${codigoTerritory}`, '', {
+      .post(`${this.url}/AdequancyPlan/generate-image/${codigoTerritory}`, '', {
         headers: this.headersRequest,
       })
       .then((res) => {
@@ -1400,7 +1400,7 @@ export class AgrotoolsService {
 
     try {
       const { data } = await axios.post<ImagemPlano>(
-        `${this.url}/AdequancyPlan/generate-image/${codigoTerritory}`,
+        `${this.url}/Image/generate-image/${codigoTerritory}`,
         {},
         { headers: this.headersRequest },
       );
