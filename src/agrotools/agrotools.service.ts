@@ -396,7 +396,6 @@ export class AgrotoolsService {
       });
 
     if (data) {
-
       const documento = await this.documentoUploadService.uploadBase64Image(
         data.base64Image,
       );
@@ -1364,14 +1363,16 @@ export class AgrotoolsService {
   }
 
   getErroAgrotools(error: any): string {
-    if (error.response.data.Message) {
-      return 'Erro Agrotools: ' + error.response.data.Message;
+    const msgPadrao = 'Erro Agrotools inesperado';
+
+    if (!error?.response?.data) {
+      return `${msgPadrao}: ${error?.message || ''}`.trim();
     }
-    if (error.response.data.message) {
-      return 'Erro Agrotools: ' + error.response.data.message;
-    } else {
-      return 'Erro Agrotools: ';
-    }
+
+    const data = error.response.data;
+    const mensagem = data.Message ?? data.message ?? data.error ?? msgPadrao;
+
+    return `Erro Agrotools: ${mensagem}`;
   }
 
   async salvaErroRetornoAgrotools(
