@@ -50,7 +50,8 @@ async function bootstrap() {
     .build();
 
   const documentFactory = () => SwaggerModule.createDocument(app, config);
-  SwaggerModule.setup('imac/api/v1/docs', app, documentFactory, {
+  SwaggerModule.setup('api-docs', app, documentFactory, {
+    useGlobalPrefix: false,
     swaggerOptions: {
       tagsSorter: 'alpha',
       persistAuthorization: true,
@@ -59,9 +60,8 @@ async function bootstrap() {
 
   const port = process.env.PORT ? Number(process.env.PORT) : 3000;
 
-  // CRÍTICO: Ouvir em '0.0.0.0' permite que a DigitalOcean conecte no container
-  const server = await app.listen(port, '0.0.0.0');
-  
+  await app.listen(port, '0.0.0.0');
+
 }
 
 bootstrap();
