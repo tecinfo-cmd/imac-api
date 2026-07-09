@@ -699,7 +699,6 @@ export class CobrancasService {
         : [],
       car: propriedade.carFederal,
       geometry: territorioResponse.geom,
-      imagemAnalise: territorioResponse.imagemAdequacao,
     } as TerritorioEntity;
     await this.territorioRepository.save(territorioEntity);
     await this.pagamentoVoucherRepository.update(pag.id, pag);
@@ -839,7 +838,8 @@ export class CobrancasService {
                     propriedade.id,
                   );
                 if (!territorioResponse) {
-                  territorioResponse =  await this.agrotoolsService.criarTerritorio(territorio);
+                  territorioResponse =
+                    await this.agrotoolsService.criarTerritorio(territorio);
                   await this.salvaTerritorio(
                     territorioResponse,
                     propriedade,

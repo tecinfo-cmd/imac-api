@@ -1037,7 +1037,7 @@ export class AgrotoolsService {
         contestacaoId: IsNull(),
         propriedade: {
           territorios: {
-            imagemAdequacao: IsNull(),
+            imagemAnalise: IsNull(),
           },
         },
         planoAdequacao: {
@@ -1436,7 +1436,7 @@ export class AgrotoolsService {
 
     try {
       const { data } = await axios.post<ImagemPlano>(
-        `${this.url}/AdequancyPlan/generate-image/${codigoTerritory}`,
+        `${this.url}/Image/generate-image/${codigoTerritory}`,
         {},
         { headers: this.headersRequest },
       );
@@ -1457,4 +1457,5 @@ export class AgrotoolsService {
 
     return null;
   }
+
 }
