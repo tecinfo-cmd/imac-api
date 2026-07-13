@@ -331,7 +331,7 @@ export class AgrotoolsService {
     cdTerritory: string,
     idAnalise: number,
   ): Promise<RetornoPlanoAdequacao> {
-    const retornoAgrotools = await this.consultaAnalise(idAnalise);
+    const retornoAgrotools = await this.consultaAnalisePLanoAdequacao(idAnalise);
     const planoAdequacao = await this.consultaPlanoPorIdAnalise(idAnalise);
 
     if (!planoAdequacao) {
@@ -967,6 +967,16 @@ export class AgrotoolsService {
       },
       relations: ['deteccoes', 'documentos'],
     });
+  }
+
+  async consultaAnalisePLanoAdequacao(idAnalise: number) {
+    return await this.retornoAnaliseRepository
+      .createQueryBuilder('ra')
+      .innerJoinAndSelect('ra.deteccoes', 'd')
+      .where('ra.id = :idAnalise', { idAnalise })
+      //    .andWhere('d.tipoDeteccao IS NOT NULL')
+      .orderBy('ra.id', 'DESC')
+      .getOne();
   }
 
   private async verificaContestacoesAnaliseNaoSalvas() {
