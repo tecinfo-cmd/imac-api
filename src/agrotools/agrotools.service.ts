@@ -408,7 +408,7 @@ export class AgrotoolsService {
           ({
             descricao: l.criteria,
             cor: l.color,
-            tipo: 'Imagem Analise',
+            tipo: 'Imagem Plano Adequacao',
             territorio: territorio,
           }) as LegendaEntity,
       );
@@ -1440,7 +1440,7 @@ export class AgrotoolsService {
             ({
               descricao: l.criteria,
               cor: l.color,
-              tipo: 'Imagem Analise',
+              tipo: 'Imagem Contestacao',
               territorio: territorio,
             }) as LegendaEntity,
         );
