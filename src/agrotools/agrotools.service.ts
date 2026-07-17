@@ -403,7 +403,8 @@ export class AgrotoolsService {
         data.base64Image,
       );
 
-      const legendas = data.legends.map(
+      //TODO AGROTOOLS NÃO RETORNA LEGENDA PARA PLANO DE ADEQUAÇÃO
+     /* const legendas = data.legends.map(
         (l) =>
           ({
             descricao: l.criteria,
@@ -412,7 +413,7 @@ export class AgrotoolsService {
             territorio: territorio,
           }) as LegendaEntity,
       );
-      await this.legendaRepository.save(legendas);
+      await this.legendaRepository.save(legendas);*/
       territorio.imagemAdequacao = documento.url;
       await this.territorioRepository.save(territorio);
 
