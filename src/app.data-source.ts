@@ -37,6 +37,7 @@ import { Frigorifico } from './frigorico/entities/frigorifico.entity';
 import { VoucherEntity } from './frigorico/entities/voucher.entity';
 import { DocumentoOrientativo } from './documento-orientativo/entity/documento-orientativo.entity';
 import { ErroFuncionalidade } from './exception/erro-funcionalidade';
+import { LegendaEntity } from './agrotools/entities/legenda.entity';
 
 ConfigModule.forRoot();
 
@@ -85,6 +86,7 @@ export const AppDataSource = new DataSource({
     VoucherEntity,
     DocumentoOrientativo,
     ErroFuncionalidade,
+    LegendaEntity,
   ],
   migrations: process.env.SET_MIGRATION_PATH
     ? ['src/migrations/*.ts']

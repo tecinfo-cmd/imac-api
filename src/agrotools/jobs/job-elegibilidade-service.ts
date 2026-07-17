@@ -41,12 +41,12 @@ export class JobElegibilidadeService {
     this.agroToolsService.verificaAnalise();
   }
 
-  @Cron('0 */6 * * * *')
+  @Cron('0 */5 * * * *')
   verificaContestacoesAnalise() {
     this.agroToolsService.verificaContestacoesAnalise();
   }
 
-  @Cron('0 */4 * * * *')
+  @Cron('0 */7 * * * *')
   verificaPlanosAdequacao() {
     this.agroToolsService.verificaPlanosAdequacao();
   }

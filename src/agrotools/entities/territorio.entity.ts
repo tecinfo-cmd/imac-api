@@ -1,13 +1,20 @@
-import { Column, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
+import {
+  Column,
+  Entity,
+  JoinColumn,
+  ManyToOne,
+  OneToMany,
+  PrimaryGeneratedColumn,
+} from 'typeorm';
 import { Expose } from 'class-transformer';
 import { ApiProperty } from '@nestjs/swagger';
 import { Propriedade } from '../../propriedade-prem/entities/propriedade.entity';
+import { LegendaEntity } from './legenda.entity';
 
 @Entity({ schema: 'IMAC', name: 'TB_TERRITORIO' })
 export class TerritorioEntity {
-
   @PrimaryGeneratedColumn({
-    name: 'ID'
+    name: 'ID',
   })
   @Expose()
   id: number;
@@ -43,23 +50,25 @@ export class TerritorioEntity {
 
   @Expose()
   @ApiProperty()
-  @Column({name: 'IMAGEM_ANALISE'})
+  @Column({ name: 'IMAGEM_ANALISE' })
   imagemAnalise: string;
 
   @Expose()
   @ApiProperty()
-  @Column({name: 'IMAGEM_ADEQUACAO'})
+  @Column({ name: 'IMAGEM_ADEQUACAO' })
   imagemAdequacao: string;
 
   @Expose()
   @ApiProperty()
-  @Column({name: 'IMAGEM_CONTESTACAO'})
+  @Column({ name: 'IMAGEM_CONTESTACAO' })
   imagemContestacao: string;
 
   @Expose()
   @ApiProperty()
-  @Column({name: 'ERRO_AGROTOOLS'})
+  @Column({ name: 'ERRO_AGROTOOLS' })
   erroAgrotools: string;
 
+  @Expose()
+  @OneToMany(() => LegendaEntity, (legenda) => legenda.territorio)
+  legendas: LegendaEntity[];
 }
-

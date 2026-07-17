@@ -34,12 +34,31 @@ import { PdfModule } from '../pdf/pdf.module';
 import { AssinaturaModule } from '../assinatura/assinatura.module';
 import { PagamentoMulta } from '../cobranca/entities/pagamento-multa.entities';
 import { ErroFuncionalidade } from '../exception/erro-funcionalidade';
+import { LegendaEntity } from './entities/legenda.entity';
 
 @Module({
-  imports:[
-    TypeOrmModule.forFeature([ Endereco,CicloProducao,AtividadePrincipal,
-      ProprietarioConsulta,RetornoAgrotools, PagamentoVoucher, Pessoa, Propriedade, Proprietario, Cidade, Documento, TerritorioEntity,PlanoAdequacao,
-      RetornoAnaliseEntity, DeteccoesAnaliseEntity, AutoVistoriaEntity, PagamentoMulta, ErroFuncionalidade]),
+  imports: [
+    TypeOrmModule.forFeature([
+      Endereco,
+      CicloProducao,
+      AtividadePrincipal,
+      ProprietarioConsulta,
+      RetornoAgrotools,
+      PagamentoVoucher,
+      Pessoa,
+      Propriedade,
+      Proprietario,
+      Cidade,
+      Documento,
+      TerritorioEntity,
+      PlanoAdequacao,
+      RetornoAnaliseEntity,
+      DeteccoesAnaliseEntity,
+      AutoVistoriaEntity,
+      PagamentoMulta,
+      ErroFuncionalidade,
+      LegendaEntity,
+    ]),
     HttpModule,
     forwardRef(() => ElegibilidadeModule),
     forwardRef(() => AuthModule),
@@ -47,11 +66,19 @@ import { ErroFuncionalidade } from '../exception/erro-funcionalidade';
     forwardRef(() => CobrancaModule),
     forwardRef(() => AgrotoolsModule),
     PdfModule,
-    AssinaturaModule
+    AssinaturaModule,
   ],
-  providers: [AgrotoolsService,EmailService, JobElegibilidadeService, PessoaService,ProprietarioPremService,
-    PropriedadePremService, DocumentoUploadService, AutoVistoriaService],
+  providers: [
+    AgrotoolsService,
+    EmailService,
+    JobElegibilidadeService,
+    PessoaService,
+    ProprietarioPremService,
+    PropriedadePremService,
+    DocumentoUploadService,
+    AutoVistoriaService,
+  ],
   controllers: [AgrotoolsController],
-  exports: [EmailService, AgrotoolsService]
+  exports: [EmailService, AgrotoolsService],
 })
 export class AgrotoolsModule {}

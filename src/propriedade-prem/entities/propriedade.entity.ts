@@ -202,7 +202,6 @@ export class Propriedade {
 
   @Expose()
   @ApiProperty()
-  @ApiProperty()
   @OneToMany(
     () => PagamentoMulta,
     (pagamentoMulta) => pagamentoMulta.propriedade,

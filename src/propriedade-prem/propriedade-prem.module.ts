@@ -26,18 +26,41 @@ import { AssinaturaModule } from '../assinatura/assinatura.module';
 import { PagamentoMulta } from '../cobranca/entities/pagamento-multa.entities';
 import { EmailService } from '../email/email.service';
 import { MensagemService } from '../message/mensagem.service';
+import { LegendaEntity } from '../agrotools/entities/legenda.entity';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Propriedade, Proprietario, Endereco, CicloProducao, AtividadePrincipal, Pessoa, Cidade, Documento, AutoVistoriaEntity, PagamentoMulta]),
-    HttpModule, 
+  imports: [
+    TypeOrmModule.forFeature([
+      Propriedade,
+      Proprietario,
+      Endereco,
+      CicloProducao,
+      AtividadePrincipal,
+      Pessoa,
+      Cidade,
+      Documento,
+      AutoVistoriaEntity,
+      PagamentoMulta,
+      LegendaEntity,
+    ]),
+    HttpModule,
     AnaliseSocioambientalModule,
     PdfModule,
     AssinaturaModule,
     forwardRef(() => AgrotoolsModule),
     forwardRef(() => UsuarioModule),
-    forwardRef(() => CobrancaModule)],
-  controllers: [PropriedadePremController,AutoVistoriaController],
-  providers: [PropriedadePremService, PessoaService, ProprietarioPremService, DocumentoUploadService,AutoVistoriaService, EmailService, MensagemService],
-  exports: [PropriedadePremService]
+    forwardRef(() => CobrancaModule),
+  ],
+  controllers: [PropriedadePremController, AutoVistoriaController],
+  providers: [
+    PropriedadePremService,
+    PessoaService,
+    ProprietarioPremService,
+    DocumentoUploadService,
+    AutoVistoriaService,
+    EmailService,
+    MensagemService,
+  ],
+  exports: [PropriedadePremService],
 })
 export class PropriedadePremModule {}

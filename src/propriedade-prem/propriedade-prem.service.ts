@@ -323,6 +323,7 @@ export class PropriedadePremService {
         .leftJoinAndSelect('documentos.usuarioUpload', 'usuarioUpload')
         .leftJoinAndSelect('propriedade.analista', 'analista')
         .leftJoinAndSelect('propriedade.territorios', 'territorios')
+        .leftJoinAndSelect('territorios.legendas', 'legendas')
         .leftJoinAndSelect('propriedade.vouches', 'vouches')
         .leftJoinAndSelect(
           'propriedade.atividadePrincipal',

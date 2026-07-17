@@ -215,15 +215,16 @@ export class ResultadoEligibilidadeTemplate extends BaseTemplate<EmailData> {
                     <ul>
                         <li>CAR: <strong>${this.data.car}</strong></li>
                         <li>CAR Estadual: <strong>${this.data.carEstadual}</strong></li>
-                        ${this.data.deteccoes.map(deteccao => '<li>' + deteccao.tipo + ': <strong>' + deteccao.area_ha + '</strong></li>').join('')}
+                        ${this.data.deteccoes.map((deteccao) => '<li>' + deteccao.tipo + ': <strong>' + deteccao.area_ha + '</strong></li>').join('')}
                         <li>Sobreposição com área de RL ou APP: <strong>SIM</strong></li>
-                        <li>Propriedade: <strong>${this.data.propriedadeApta ? "ELEGÍVEL" : "NÃO ELEGÍVEL"}</strong> ao PREM</li>
+                        <li>Propriedade: <strong>${this.data.propriedadeApta ? 'ELEGÍVEL' : 'NÃO ELEGÍVEL'}</strong> ao PREM</li>
                         <li>Área de desmatamento total: <strong>${this.data.areaDesmatamentoTotal} ha</strong></li>
                         <li>Número de módulos fiscais: <strong>${this.data.numeroModulosFiscais}</strong></li>
                         <li ${!this.data.propriedadeApta ? 'class="hidden"' : ''}><strong>Valor da multa indenizatória: ${Number(this.data.valorMulta).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</strong></li>
                     </ul>
-                    <p id="observation" ${!this.data.propriedadeApta ? 'class="hidden"' : ''}><strong>*Observação:</strong></br>O valor da multa indenizatória pode receber desconto,
-            conforme as regras do Programa:</p>
+                    <p id="observation" ${!this.data.propriedadeApta ? 'class="hidden"' : ''}><strong>*Observação:</strong></br>
+                     Para calculo da Multa é considerado apenas os Polígonos de Prodes maiores ou iguais a 6,25 ha. 
+                     O valor da multa indenizatória pode receber desconto, conforme as regras do Programa:</p>
                     <div class="table-container" ${!this.data.propriedadeApta ? 'class="hidden"' : ''}>
                         <table border="1" class="rules-table">
                         <thead>
@@ -259,7 +260,7 @@ export class ResultadoEligibilidadeTemplate extends BaseTemplate<EmailData> {
                         </table>
                     </div>
                     <p ${!this.data.propriedadeApta ? 'id="negative-text" style="text-align: center; margin: 20px 0;"' : 'style="text-align: center; margin: 20px 0;"'}>
-                        <strong>${this.data.propriedadeApta ? "Cadastre-se no PREM e adquira seu voucher!" : "Caso tenha dúvidas, entre em contato com o IMAC"}</strong>
+                        <strong>${this.data.propriedadeApta ? 'Cadastre-se no PREM e adquira seu voucher!' : 'Caso tenha dúvidas, entre em contato com o IMAC'}</strong>
                     </p>
                     <a href="${gerarUrl()}" ${!this.data.propriedadeApta ? 'class="hidden"' : 'class="button" style="margin: 0 auto; display: block;"'}><strong>Cadastrar</strong></a>
                 </div>
@@ -281,6 +282,6 @@ export class ResultadoEligibilidadeTemplate extends BaseTemplate<EmailData> {
         </tr>
     </table>
 </body>
-</html>`
+</html>`;
     }
 }

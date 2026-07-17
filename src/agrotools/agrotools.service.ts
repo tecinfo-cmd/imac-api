@@ -13,7 +13,7 @@ import {
   SolicitacaoElegibilidade,
   StatusSolicitacaoEligibilidade,
 } from '../elegibilidade/entities/solicitacao-elegibilidade.entity';
-import { EntityManager, Equal, IsNull, Not, Raw, Repository } from 'typeorm';
+import { EntityManager, IsNull, Not, Raw, Repository } from 'typeorm';
 import { ElegibilidadeService } from '../elegibilidade/elegibilidade.service';
 import { ElegibilidadeRequest } from './request/elegibilidade-request';
 import { RetornoElegibilidadeResponse } from './response/retorno-elegibilidade-response';
@@ -44,7 +44,6 @@ import { DeteccoesAgrotools } from '../elegibilidade/entities/deteccoes-agrotool
 import { DeteccoesAnaliseEntity } from './entities/deteccoes-analise.entity';
 import { VistoriaAgrotools } from './request/vistoria-agrotools';
 import { AutoVistoriaService } from '../propriedade-prem/auto-vistoria/auto-vistoria.service';
-import { createHash } from 'crypto';
 import { EnderecoProdutorAgrotools } from './request/endereco-produtor-agrotools';
 import { UsuarioService } from '../usuario/usuario.service';
 import { PlanoAdequacaoRequest } from './request/planoAdequacao/plano-adequacao-request';
@@ -62,6 +61,7 @@ import { UsuarioResponse } from '../usuario/response/usuario-response';
 import { Usuario } from '../usuario/entities/usuario.entity';
 import { AgentsRequest } from './request/agents-request';
 import { ImagemPlano } from './request/planoAdequacao/imagem-plano';
+import { LegendaEntity } from './entities/legenda.entity';
 
 @Injectable()
 export class AgrotoolsService {
@@ -93,6 +93,8 @@ export class AgrotoolsService {
     private readonly planoAdequacaoRepository: Repository<PlanoAdequacao>,
     private readonly documentoUploadService: DocumentoUploadService,
     private readonly entityManager: EntityManager,
+    @InjectRepository(LegendaEntity)
+    private readonly legendaRepository: Repository<LegendaEntity>,
   ) {
     this.url = process.env.URL_AGROTOOLS as string;
   }
@@ -331,7 +333,8 @@ export class AgrotoolsService {
     cdTerritory: string,
     idAnalise: number,
   ): Promise<RetornoPlanoAdequacao> {
-    const retornoAgrotools = await this.consultaAnalisePLanoAdequacao(idAnalise);
+    const retornoAgrotools =
+      await this.consultaAnalisePLanoAdequacao(idAnalise);
     const planoAdequacao = await this.consultaPlanoPorIdAnalise(idAnalise);
 
     if (!planoAdequacao) {
@@ -400,8 +403,18 @@ export class AgrotoolsService {
         data.base64Image,
       );
 
+      const legendas = data.legends.map(
+        (l) =>
+          ({
+            descricao: l.criteria,
+            cor: l.color,
+            tipo: 'Imagem Analise',
+            territorio: territorio,
+          }) as LegendaEntity,
+      );
+      await this.legendaRepository.save(legendas);
       territorio.imagemAdequacao = documento.url;
-      await this.territorioRepository.update(territorio.id, territorio);
+      await this.territorioRepository.save(territorio);
 
       return territorio;
     }
@@ -1422,12 +1435,22 @@ export class AgrotoolsService {
         );
 
         territorio.imagemContestacao = documento.url;
-        await this.territorioRepository.update(territorio.id, territorio);
+        const legendas = data.legends.map(
+          (l) =>
+            ({
+              descricao: l.criteria,
+              cor: l.color,
+              tipo: 'Imagem Analise',
+              territorio: territorio,
+            }) as LegendaEntity,
+        );
+        await this.legendaRepository.save(legendas);
+        await this.territorioRepository.save(territorio);
         return territorio;
       }
     } catch (error) {
       territorio.erroAgrotools = this.getErroAgrotools(error);
-      await this.territorioRepository.update(territorio.id, territorio);
+      await this.territorioRepository.save(territorio);
     }
 
     return null;
@@ -1455,17 +1478,25 @@ export class AgrotoolsService {
         const documento = await this.documentoUploadService.uploadBase64Image(
           data.base64Image,
         );
-
+        const legendas = data.legends.map(
+          (l) =>
+            ({
+              descricao: l.criteria,
+              cor: l.color,
+              tipo: 'Imagem Analise',
+              territorio: territorio,
+            }) as LegendaEntity,
+        );
+        await this.legendaRepository.save(legendas);
         territorio.imagemAnalise = documento.url;
-        await this.territorioRepository.update(territorio.id, territorio);
+        await this.territorioRepository.save(territorio);
         return territorio;
       }
     } catch (error) {
       territorio.erroAgrotools = this.getErroAgrotools(error);
-      await this.territorioRepository.update(territorio.id, territorio);
+      await this.territorioRepository.save(territorio);
     }
 
     return null;
   }
-
 }
