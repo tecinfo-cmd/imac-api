@@ -12,9 +12,7 @@ import { plainToClass } from 'class-transformer';
 import { DocumentoUploadService } from '../../upload/documento-upload.service';
 import { Documento } from '../../shared/entity/documento.entity';
 import { ParametrosArquivo } from '../../shared/dto/base-upload-request.dto';
-import {
-  EnviarArquivosContestacaoAutorizacaoSupressaoRequest,
-} from './dto/enviar-arquivos-contestacao-autorizacao-supressao-request';
+import { EnviarArquivosContestacaoAutorizacaoSupressaoRequest } from './dto/enviar-arquivos-contestacao-autorizacao-supressao-request';
 import { EnviarArquivosContestacaoLaudoRequest } from './dto/enviar-arquivos-contestacao-laudo-request';
 import { ResponsavelTecnico } from '../../responsavel-tecnico/entities/responsavel-tecnico.entity';
 import { PlanoAdequacao } from './entities/plano-adequacao.entity';
@@ -32,6 +30,7 @@ import { ContestacaoAnalisadaTemplate } from '../../email/templates/contestacao-
 import { PlanoAdequacaoAnalisadoTemplate } from '../../email/templates/plano-adequacao-analisado.template';
 import { UsuarioService } from '../../usuario/usuario.service';
 import { MensagemService } from '../../message/mensagem.service';
+import { DeteccoesAgrotools } from '../../elegibilidade/entities/deteccoes-agrotools.entity';
 
 export class AnaliseSocioambientalService {
   constructor(
@@ -55,8 +54,9 @@ export class AnaliseSocioambientalService {
     private readonly emailService: EmailService,
     private readonly usuarioService: UsuarioService,
     private readonly mensagemService: MensagemService,
-  ) {
-  }
+    @InjectRepository(DeteccoesAgrotools)
+    private readonly deteccoesAgrotoolsRepository: Repository<DeteccoesAgrotools>,
+  ) {}
 
   private async processarDocumentosUpload(
     arquivos: Express.Multer.File[],
@@ -65,7 +65,8 @@ export class AnaliseSocioambientalService {
   ): Promise<Documento[]> {
     const usuario = await this.usuarioService.buscarUsuarioPorEmail(email);
 
-    const documentosUpload = await this.documentoUploadService.uploadFiles(arquivos);
+    const documentosUpload =
+      await this.documentoUploadService.uploadFiles(arquivos);
 
     const documentosParaSalvar = documentosUpload.map((docUpload) => {
       const parametroCorrespondente = parametros.find(
@@ -73,7 +74,9 @@ export class AnaliseSocioambientalService {
       );
 
       if (!parametroCorrespondente) {
-        throw new BadRequestException(`Parâmetro não encontrado para o arquivo: ${docUpload.originalName}`);
+        throw new BadRequestException(
+          `Parâmetro não encontrado para o arquivo: ${docUpload.originalName}`,
+        );
       }
 
       return {
@@ -85,54 +88,65 @@ export class AnaliseSocioambientalService {
       };
     });
 
-    const documentosSalvos = await this.documentoRepository.save(documentosParaSalvar);
+    const documentosSalvos =
+      await this.documentoRepository.save(documentosParaSalvar);
     return documentosSalvos;
   }
 
-  private async validarResponsavelTecnico(idResponsavelTecnico: number): Promise<void> {
-    const responsavelTecnico = await this.responsavelTecnicoRepository.findOne({ where: { id: idResponsavelTecnico } });
+  private async validarResponsavelTecnico(
+    idResponsavelTecnico: number,
+  ): Promise<void> {
+    const responsavelTecnico = await this.responsavelTecnicoRepository.findOne({
+      where: { id: idResponsavelTecnico },
+    });
 
     if (!responsavelTecnico) {
       throw new BadRequestException('Responsável Técnico não encontrado.');
     }
   }
 
-  async buscarAnaliseSocioambiental(idPropriedade: number, idAnalise: number, request: AuthenticatedRequest): Promise<RetornoAnaliseEntity> {
-
-    const analiseSocioambiental = await this.analiseSocioambientalRepository.findOne({
-      where: {
-        id: idAnalise,
-        propriedade: {
-          id: idPropriedade,
-          proprietarios: request.user.roles.includes('ANALISTA') ? undefined : [{ pessoa: { email: request.user.email } }],
+  async buscarAnaliseSocioambiental(
+    idPropriedade: number,
+    idAnalise: number,
+    request: AuthenticatedRequest,
+  ): Promise<RetornoAnaliseEntity> {
+    const analiseSocioambiental =
+      await this.analiseSocioambientalRepository.findOne({
+        where: {
+          id: idAnalise,
+          propriedade: {
+            id: idPropriedade,
+            proprietarios: request.user.roles.includes('ANALISTA')
+              ? undefined
+              : [{ pessoa: { email: request.user.email } }],
+          },
         },
-      },
-      order: {
-        contestacaoLaudo: { id: 'DESC' }
-        , contestacaoAutorizacaoSupressao: { id: 'DESC' }
-        , planoAdequacao: { id: 'DESC' },
-      },
-      relations: [
-        'documentos',
-        'deteccoes',
-        'propriedade',
-        'propriedade.proprietarios',
-        'propriedade.proprietarios.pessoa',
-        'contestacaoAutorizacaoSupressao',
-        'contestacaoAutorizacaoSupressao.documentos',
-        'contestacaoAutorizacaoSupressao.responsavelTecnico',
-        'contestacaoAutorizacaoSupressao.autorizacoesSupressoes',
-        'contestacaoAutorizacaoSupressao.autorizacoesSupressoes.tipo',
-        'contestacaoAutorizacaoSupressao.autorizacoesSupressoes.orgaoEmissor',
-        'contestacaoAutorizacaoSupressao.autorizacoesSupressoes.documentos',
-        'contestacaoLaudo',
-        'contestacaoLaudo.documentos',
-        'contestacaoLaudo.responsavelTecnico',
-        'planoAdequacao',
-        'planoAdequacao.documentos',
-        'planoAdequacao.responsavelTecnico',
-      ],
-    });
+        order: {
+          contestacaoLaudo: { id: 'DESC' },
+          contestacaoAutorizacaoSupressao: { id: 'DESC' },
+          planoAdequacao: { id: 'DESC' },
+        },
+        relations: [
+          'documentos',
+          'deteccoes',
+          'propriedade',
+          'propriedade.proprietarios',
+          'propriedade.proprietarios.pessoa',
+          'contestacaoAutorizacaoSupressao',
+          'contestacaoAutorizacaoSupressao.documentos',
+          'contestacaoAutorizacaoSupressao.responsavelTecnico',
+          'contestacaoAutorizacaoSupressao.autorizacoesSupressoes',
+          'contestacaoAutorizacaoSupressao.autorizacoesSupressoes.tipo',
+          'contestacaoAutorizacaoSupressao.autorizacoesSupressoes.orgaoEmissor',
+          'contestacaoAutorizacaoSupressao.autorizacoesSupressoes.documentos',
+          'contestacaoLaudo',
+          'contestacaoLaudo.documentos',
+          'contestacaoLaudo.responsavelTecnico',
+          'planoAdequacao',
+          'planoAdequacao.documentos',
+          'planoAdequacao.responsavelTecnico',
+        ],
+      });
 
     if (!analiseSocioambiental) {
       throw new BadRequestException('Análise socioambiental não encontrada.');
@@ -152,27 +166,38 @@ export class AnaliseSocioambientalService {
 
     await this.buscarAnaliseSocioambiental(idPropriedade, idAnalise, request);
 
-    const contestacaoExistente = await this.contestacaoAutorizacaoSupressaoRepository.findOne({
-      where: { idAnalise },
-    });
+    const contestacaoExistente =
+      await this.contestacaoAutorizacaoSupressaoRepository.findOne({
+        where: { idAnalise },
+      });
 
     if (contestacaoExistente) {
-      throw new BadRequestException('Já existe uma contestação de autorização de supressão deste tipo para esta análise.');
+      throw new BadRequestException(
+        'Já existe uma contestação de autorização de supressão deste tipo para esta análise.',
+      );
     }
 
     await this.validarResponsavelTecnico(body.idResponsavelTecnico);
 
-    const nomesArquivosAutorizacao = new Set(autorizacoesSupressoes.map(a => a.nomeArquivo));
-    const nomesArquivosUpload = new Set(arquivos.map(a => a.originalname));
+    const nomesArquivosAutorizacao = new Set(
+      autorizacoesSupressoes.map((a) => a.nomeArquivo),
+    );
+    const nomesArquivosUpload = new Set(arquivos.map((a) => a.originalname));
 
-    const arquivosFaltando = autorizacoesSupressoes.filter(a => !nomesArquivosUpload.has(a.nomeArquivo));
+    const arquivosFaltando = autorizacoesSupressoes.filter(
+      (a) => !nomesArquivosUpload.has(a.nomeArquivo),
+    );
     if (arquivosFaltando.length > 0) {
-      const nomesArquivosFaltando = arquivosFaltando.map(a => a.nomeArquivo).join(', ');
-      throw new BadRequestException(`Os seguintes arquivos de autorização estão faltando: ${nomesArquivosFaltando}`);
+      const nomesArquivosFaltando = arquivosFaltando
+        .map((a) => a.nomeArquivo)
+        .join(', ');
+      throw new BadRequestException(
+        `Os seguintes arquivos de autorização estão faltando: ${nomesArquivosFaltando}`,
+      );
     }
 
-    const tipoIds = autorizacoesSupressoes.map(a => a.idTipo);
-    const orgaoEmissorIds = autorizacoesSupressoes.map(a => a.idOrgaoEmissor);
+    const tipoIds = autorizacoesSupressoes.map((a) => a.idTipo);
+    const orgaoEmissorIds = autorizacoesSupressoes.map((a) => a.idOrgaoEmissor);
 
     const [tipos, orgaosEmissores] = await Promise.all([
       this.tipoAutorizacaoSupressaoRepository.find({
@@ -184,32 +209,46 @@ export class AnaliseSocioambientalService {
     ]);
 
     if (tipos.length !== new Set(tipoIds).size) {
-      throw new BadRequestException('Um ou mais tipos de autorização de supressão não foram encontrados.');
+      throw new BadRequestException(
+        'Um ou mais tipos de autorização de supressão não foram encontrados.',
+      );
     }
 
     if (orgaosEmissores.length !== new Set(orgaoEmissorIds).size) {
-      throw new BadRequestException('Um ou mais órgãos emissores não foram encontrados.');
+      throw new BadRequestException(
+        'Um ou mais órgãos emissores não foram encontrados.',
+      );
     }
 
-    const documentosProcessados = await this.processarDocumentosUpload(arquivos, body.parametros, request.user.email);
-
-    const documentosPorNomeOriginal = new Map(
-      documentosProcessados.map(doc => [doc.nomeArquivoOriginal, doc]),
+    const documentosProcessados = await this.processarDocumentosUpload(
+      arquivos,
+      body.parametros,
+      request.user.email,
     );
 
-    const autorizacoesComDocumentos = autorizacoesSupressoes.map(autorizacao => {
-      const documento = documentosPorNomeOriginal.get(autorizacao.nomeArquivo);
-      if (!documento) {
-        throw new BadRequestException(`Documento processado não encontrado para a autorização: ${autorizacao.nomeArquivo}`);
-      }
-      return {
-        ...autorizacao,
-        documentos: [documento],
-      };
-    });
+    const documentosPorNomeOriginal = new Map(
+      documentosProcessados.map((doc) => [doc.nomeArquivoOriginal, doc]),
+    );
+
+    const autorizacoesComDocumentos = autorizacoesSupressoes.map(
+      (autorizacao) => {
+        const documento = documentosPorNomeOriginal.get(
+          autorizacao.nomeArquivo,
+        );
+        if (!documento) {
+          throw new BadRequestException(
+            `Documento processado não encontrado para a autorização: ${autorizacao.nomeArquivo}`,
+          );
+        }
+        return {
+          ...autorizacao,
+          documentos: [documento],
+        };
+      },
+    );
 
     const documentosContestacao = documentosProcessados.filter(
-      doc => !nomesArquivosAutorizacao.has(doc.nomeArquivoOriginal),
+      (doc) => !nomesArquivosAutorizacao.has(doc.nomeArquivoOriginal),
     );
 
     const novaContestacao = plainToClass(ContestacaoAutorizacaoSupressao, {
@@ -242,8 +281,13 @@ export class AnaliseSocioambientalService {
       },
     });
 
-    if (contestacaoExistente && contestacaoExistente.situacao == SituacaoContestacaoEnum.DEFERIDO) {
-      throw new BadRequestException('Já existe uma contestação por laudo deste tipo para esta análise.');
+    if (
+      contestacaoExistente &&
+      contestacaoExistente.situacao == SituacaoContestacaoEnum.DEFERIDO
+    ) {
+      throw new BadRequestException(
+        'Já existe uma contestação por laudo deste tipo para esta análise.',
+      );
     }
 
     await this.validarResponsavelTecnico(body.idResponsavelTecnico);
@@ -254,10 +298,11 @@ export class AnaliseSocioambientalService {
       request.user.email,
     );
 
-    const novaContestacao = plainToClass(
-      ContestacaoLaudo,
-      { ...body, idAnalise, documentos: documentosContestacao },
-    );
+    const novaContestacao = plainToClass(ContestacaoLaudo, {
+      ...body,
+      idAnalise,
+      documentos: documentosContestacao,
+    });
 
     return this.contestacaoLaudoRepository.save(novaContestacao);
   }
@@ -267,29 +312,46 @@ export class AnaliseSocioambientalService {
     idAnalise: number,
     idContestacao: number,
     request: AuthenticatedRequest,
-    payload: UploadPayloadType<EnviarArquivosContestacaoAutorizacaoSupressaoRequest>) {
+    payload: UploadPayloadType<EnviarArquivosContestacaoAutorizacaoSupressaoRequest>,
+  ) {
     const { body, arquivos } = payload;
 
-    const contestacao = await this.contestacaoAutorizacaoSupressaoRepository.findOne({
-      where: { id: idContestacao, idAnalise, analiseSocioambiental: { propriedade: { id: idPropriedade } } },
-      order: {
-        id: 'DESC',
-      },
-      relations: ['analiseSocioambiental', 'analiseSocioambiental.propriedade', 'documentos'],
-    });
+    const contestacao =
+      await this.contestacaoAutorizacaoSupressaoRepository.findOne({
+        where: {
+          id: idContestacao,
+          idAnalise,
+          analiseSocioambiental: { propriedade: { id: idPropriedade } },
+        },
+        order: {
+          id: 'DESC',
+        },
+        relations: [
+          'analiseSocioambiental',
+          'analiseSocioambiental.propriedade',
+          'documentos',
+        ],
+      });
 
     if (!contestacao) {
-      throw new BadRequestException('Contestação de autorização de supressão não encontrada para a propriedade informada.');
+      throw new BadRequestException(
+        'Contestação de autorização de supressão não encontrada para a propriedade informada.',
+      );
     }
 
     await this.buscarAnaliseSocioambiental(idPropriedade, idAnalise, request);
 
-    const documentosContestacao = await this.processarDocumentosUpload(arquivos, body.parametros, request.user.email);
+    const documentosContestacao = await this.processarDocumentosUpload(
+      arquivos,
+      body.parametros,
+      request.user.email,
+    );
 
-    const contestacaoAtualizada = await this.contestacaoAutorizacaoSupressaoRepository.save({
-      ...contestacao,
-      documentos: [...contestacao.documentos, ...documentosContestacao],
-    });
+    const contestacaoAtualizada =
+      await this.contestacaoAutorizacaoSupressaoRepository.save({
+        ...contestacao,
+        documentos: [...contestacao.documentos, ...documentosContestacao],
+      });
 
     return contestacaoAtualizada;
   }
@@ -299,24 +361,39 @@ export class AnaliseSocioambientalService {
     idAnalise: number,
     idContestacao: number,
     request: AuthenticatedRequest,
-    payload: UploadPayloadType<EnviarArquivosContestacaoLaudoRequest>) {
+    payload: UploadPayloadType<EnviarArquivosContestacaoLaudoRequest>,
+  ) {
     const { body, arquivos } = payload;
 
     const contestacao = await this.contestacaoLaudoRepository.findOne({
-      where: { id: idContestacao, idAnalise, analiseSocioambiental: { propriedade: { id: idPropriedade } } },
+      where: {
+        id: idContestacao,
+        idAnalise,
+        analiseSocioambiental: { propriedade: { id: idPropriedade } },
+      },
       order: {
         id: 'DESC',
       },
-      relations: ['analiseSocioambiental', 'analiseSocioambiental.propriedade', 'documentos'],
+      relations: [
+        'analiseSocioambiental',
+        'analiseSocioambiental.propriedade',
+        'documentos',
+      ],
     });
 
     if (!contestacao) {
-      throw new BadRequestException('Contestação por laudo não encontrada para a propriedade informada.');
+      throw new BadRequestException(
+        'Contestação por laudo não encontrada para a propriedade informada.',
+      );
     }
 
     await this.buscarAnaliseSocioambiental(idPropriedade, idAnalise, request);
 
-    const documentosContestacao = await this.processarDocumentosUpload(arquivos, body.parametros, request.user.email);
+    const documentosContestacao = await this.processarDocumentosUpload(
+      arquivos,
+      body.parametros,
+      request.user.email,
+    );
 
     const contestacaoAtualizada = await this.contestacaoLaudoRepository.save({
       ...contestacao,
@@ -336,21 +413,27 @@ export class AnaliseSocioambientalService {
 
     await this.buscarAnaliseSocioambiental(idPropriedade, idAnalise, request);
 
-    const planoAdequacaoExistente = await this.planoAdequacaoRepository.findOne({
-      where: {
-        idAnalise: idAnalise,
+    const planoAdequacaoExistente = await this.planoAdequacaoRepository.findOne(
+      {
+        where: {
+          idAnalise: idAnalise,
+        },
+        order: {
+          id: 'DESC',
+        },
       },
-      order: {
-        id: 'DESC',
-      },
-    });
+    );
 
-    if (planoAdequacaoExistente && planoAdequacaoExistente.situacao == SituacaoPlanoAdequacaoEnum.DEFERIDO) {
-      throw new BadRequestException('Já existe um plano de adequação para esta análise.');
+    if (
+      planoAdequacaoExistente &&
+      planoAdequacaoExistente.situacao == SituacaoPlanoAdequacaoEnum.DEFERIDO
+    ) {
+      throw new BadRequestException(
+        'Já existe um plano de adequação para esta análise.',
+      );
     }
 
     await this.validarResponsavelTecnico(body.idResponsavelTecnico);
-
 
     const documentosPlanoAdequacao = await this.processarDocumentosUpload(
       arquivos,
@@ -358,10 +441,11 @@ export class AnaliseSocioambientalService {
       request.user.email,
     );
 
-    const novoPlanoAdequacao = plainToClass(
-      PlanoAdequacao,
-      { ...body, idAnalise, documentos: documentosPlanoAdequacao },
-    );
+    const novoPlanoAdequacao = plainToClass(PlanoAdequacao, {
+      ...body,
+      idAnalise,
+      documentos: documentosPlanoAdequacao,
+    });
 
     return this.planoAdequacaoRepository.save(novoPlanoAdequacao);
   }
@@ -374,10 +458,16 @@ export class AnaliseSocioambientalService {
   ): Promise<CriarParecerContestacaoResponse> {
     const { body, arquivos } = payload;
 
-    const analiseSocioambiental = await this.buscarAnaliseSocioambiental(idPropriedade, idAnalise, request);
+    const analiseSocioambiental = await this.buscarAnaliseSocioambiental(
+      idPropriedade,
+      idAnalise,
+      request,
+    );
 
     if (body.status === SituacaoContestacaoEnum.EM_ANALISE) {
-      throw new BadRequestException('Não é possível colocar em análise um parecer de contestação');
+      throw new BadRequestException(
+        'Não é possível colocar em análise um parecer de contestação',
+      );
     }
 
     const statusQueExigemCampos = [
@@ -387,11 +477,14 @@ export class AnaliseSocioambientalService {
 
     if (statusQueExigemCampos.includes(body.status)) {
       if (!body.poligonos || !body.valorMulta || !body.descontoPercentual) {
-        throw new BadRequestException('Para deferir ou deferir parcialmente a contestação, os campos poligonos, valorMulta e descontoPercentual são obrigatórios.');
+        throw new BadRequestException(
+          'Para deferir ou deferir parcialmente a contestação, os campos poligonos, valorMulta e descontoPercentual são obrigatórios.',
+        );
       }
     }
 
-    const contestacaoAutorizacaoSupressao = analiseSocioambiental.contestacaoAutorizacaoSupressao;
+    const contestacaoAutorizacaoSupressao =
+      analiseSocioambiental.contestacaoAutorizacaoSupressao;
     const contestacaoLaudo = analiseSocioambiental.contestacaoLaudo;
 
     const statusValidosParaParecer = [
@@ -400,21 +493,29 @@ export class AnaliseSocioambientalService {
     ];
 
     if (!contestacaoAutorizacaoSupressao && !contestacaoLaudo) {
-      throw new BadRequestException('Não é possível criar um parecer sem que haja uma contestação existente.');
+      throw new BadRequestException(
+        'Não é possível criar um parecer sem que haja uma contestação existente.',
+      );
     }
 
     if (
       contestacaoAutorizacaoSupressao &&
-      !statusValidosParaParecer.includes(contestacaoAutorizacaoSupressao.situacao)
+      !statusValidosParaParecer.includes(
+        contestacaoAutorizacaoSupressao.situacao,
+      )
     ) {
-      throw new BadRequestException('Não é possível criar um parecer para uma contestação de autorização de supressão que não esteja em análise ou com pendências.');
+      throw new BadRequestException(
+        'Não é possível criar um parecer para uma contestação de autorização de supressão que não esteja em análise ou com pendências.',
+      );
     }
 
     if (
       contestacaoLaudo &&
       !statusValidosParaParecer.includes(contestacaoLaudo.situacao)
     ) {
-      throw new BadRequestException('Não é possível criar um parecer para uma contestação por laudo que não esteja em análise ou com pendências.');
+      throw new BadRequestException(
+        'Não é possível criar um parecer para uma contestação por laudo que não esteja em análise ou com pendências.',
+      );
     }
 
     const statusQueNaoPodemPossuirCampos = [
@@ -424,7 +525,9 @@ export class AnaliseSocioambientalService {
 
     if (statusQueNaoPodemPossuirCampos.includes(body.status)) {
       if (body.poligonos || body.valorMulta || body.descontoPercentual) {
-        throw new BadRequestException('Para indeferir ou colocar a contestação com pendências, os campos poligonos, valorMulta e descontoPercentual não devem ser informados.');
+        throw new BadRequestException(
+          'Para indeferir ou colocar a contestação com pendências, os campos poligonos, valorMulta e descontoPercentual não devem ser informados.',
+        );
       }
     }
 
@@ -434,16 +537,21 @@ export class AnaliseSocioambientalService {
       request.user.email,
     );
 
-    const areaARegenerar = body.poligonos?.reduce((total, poligono) => total + poligono.areaARegenerar, 0);
-    const deteccoes = analiseSocioambiental.deteccoes.map(deteccao => {
+    const areaARegenerar = body.poligonos?.reduce(
+      (total, poligono) => total + poligono.areaARegenerar,
+      0,
+    );
+    const deteccoes = analiseSocioambiental.deteccoes.map((deteccao) => {
       if (body.poligonos) {
-        const poligono = body.poligonos.find(poligono => poligono.idTad === deteccao.idAgrotools);
+        const poligono = body.poligonos.find(
+          (poligono) => poligono.idTad === deteccao.idAgrotools,
+        );
 
         return {
           ...deteccao,
           wkt: poligono?.wkt,
           areaARegenerar: poligono?.areaARegenerar,
-          tipoDeteccao: poligono?.tipoDeteccao
+          tipoDeteccao: poligono?.tipoDeteccao,
         };
       }
 
@@ -451,34 +559,50 @@ export class AnaliseSocioambientalService {
     });
 
     if (analiseSocioambiental.contestacaoAutorizacaoSupressao) {
-      this.contestacaoAutorizacaoSupressaoRepository.update(analiseSocioambiental.contestacaoAutorizacaoSupressao.id, { situacao: body.status });
+      this.contestacaoAutorizacaoSupressaoRepository.update(
+        analiseSocioambiental.contestacaoAutorizacaoSupressao.id,
+        { situacao: body.status },
+      );
     }
 
     if (analiseSocioambiental.contestacaoLaudo) {
-      this.contestacaoLaudoRepository.update(analiseSocioambiental.contestacaoLaudo.id, { situacao: body.status });
+      this.contestacaoLaudoRepository.update(
+        analiseSocioambiental.contestacaoLaudo.id,
+        { situacao: body.status },
+      );
     }
 
-    const parecerContestacao = plainToClass(
-      RetornoAnaliseEntity,
-      {
-        ...analiseSocioambiental,
-        areaARegenerar,
-        valorMulta: body.valorMulta ? body.valorMulta : analiseSocioambiental.valorMulta,
-        descontoPercentual: body.descontoPercentual,
-        idAnalise,
-        documentos: [...(analiseSocioambiental.documentos || []), ...documentosParecerContestacao],
-        deteccoes,
-      },
-    );
+    await this.deteccoesAgrotoolsRepository.save(deteccoes);
 
-    const emailProprietario = analiseSocioambiental.propriedade?.proprietarios[0].pessoa.email;
-    const proprietario = analiseSocioambiental.propriedade?.proprietarios[0].pessoa.nome;
-    const telefone = analiseSocioambiental.propriedade?.proprietarios[0].pessoa.telefone;
-    const analise = 'Analise SocioAmbiental'
+    const parecerContestacao = plainToClass(RetornoAnaliseEntity, {
+      ...analiseSocioambiental,
+      areaARegenerar,
+      valorMulta: body.valorMulta
+        ? body.valorMulta
+        : analiseSocioambiental.valorMulta,
+      descontoPercentual: body.descontoPercentual,
+      idAnalise,
+      documentos: [
+        ...(analiseSocioambiental.documentos || []),
+        ...documentosParecerContestacao,
+      ],
+      deteccoes,
+    });
+
+    const emailProprietario =
+      analiseSocioambiental.propriedade?.proprietarios[0].pessoa.email;
+    const proprietario =
+      analiseSocioambiental.propriedade?.proprietarios[0].pessoa.nome;
+    const telefone =
+      analiseSocioambiental.propriedade?.proprietarios[0].pessoa.telefone;
+    const analise = 'Analise SocioAmbiental';
 
     const dados = {
-      produtor: proprietario, propriedade: analiseSocioambiental.propriedade?.nomePropriedade,
-      carFederal: analiseSocioambiental.propriedade?.carFederal, etapa: analise, telefone,
+      produtor: proprietario,
+      propriedade: analiseSocioambiental.propriedade?.nomePropriedade,
+      carFederal: analiseSocioambiental.propriedade?.carFederal,
+      etapa: analise,
+      telefone,
     };
     await this.mensagemService.enviarMensagenStatus(dados);
 
@@ -500,10 +624,16 @@ export class AnaliseSocioambientalService {
   ): Promise<CriarParecerPlanoAdequacaoResponse> {
     const { body, arquivos } = payload;
 
-    const analiseSocioambiental = await this.buscarAnaliseSocioambiental(idPropriedade, idAnalise, request);
+    const analiseSocioambiental = await this.buscarAnaliseSocioambiental(
+      idPropriedade,
+      idAnalise,
+      request,
+    );
 
     if (body.status === SituacaoContestacaoEnum.EM_ANALISE) {
-      throw new BadRequestException('Não é possível colocar em análise um parecer de plano de adequação');
+      throw new BadRequestException(
+        'Não é possível colocar em análise um parecer de plano de adequação',
+      );
     }
 
     const statusQueExigemCampos = [
@@ -513,7 +643,9 @@ export class AnaliseSocioambientalService {
 
     if (statusQueExigemCampos.includes(body.status)) {
       if (!body.wkt) {
-        throw new BadRequestException('Para deferir ou deferir parcialmente o plano de adequação, o campo wkt é obrigatório.');
+        throw new BadRequestException(
+          'Para deferir ou deferir parcialmente o plano de adequação, o campo wkt é obrigatório.',
+        );
       }
     }
 
@@ -525,14 +657,18 @@ export class AnaliseSocioambientalService {
     ];
 
     if (planoAdequacao && planoAdequacao.id !== idPlanoAdequacao) {
-      throw new BadRequestException('Não é possível criar um parecer sem que haja um plano de adequação existente.');
+      throw new BadRequestException(
+        'Não é possível criar um parecer sem que haja um plano de adequação existente.',
+      );
     }
 
     if (
       planoAdequacao &&
       !statusValidosParaParecer.includes(planoAdequacao.situacao)
     ) {
-      throw new BadRequestException('Não é possível criar um parecer para uma contestação de autorização de supressão que não esteja em análise ou com pendências.');
+      throw new BadRequestException(
+        'Não é possível criar um parecer para uma contestação de autorização de supressão que não esteja em análise ou com pendências.',
+      );
     }
 
     const statusQueNaoPodemPossuirCampos = [
@@ -542,34 +678,43 @@ export class AnaliseSocioambientalService {
 
     if (statusQueNaoPodemPossuirCampos.includes(body.status)) {
       if (body.wkt) {
-        throw new BadRequestException('Para indeferir ou colocar a contestação com pendências, os campo wkt não deve ser informado.');
+        throw new BadRequestException(
+          'Para indeferir ou colocar a contestação com pendências, os campo wkt não deve ser informado.',
+        );
       }
     }
 
-    const documentosParecerPlanoAdequacao = await this.processarDocumentosUpload(
-      arquivos,
-      body.parametros,
-      request.user.email,
-    );
+    const documentosParecerPlanoAdequacao =
+      await this.processarDocumentosUpload(
+        arquivos,
+        body.parametros,
+        request.user.email,
+      );
 
-    const planoAdequacaoAtualizado = plainToClass(
-      PlanoAdequacao,
-      {
-        ...planoAdequacao,
-        wkt: body.wkt,
-        situacao: body.status,
-        documentos: [...(planoAdequacao?.documentos || []), ...documentosParecerPlanoAdequacao],
-      },
-    );
+    const planoAdequacaoAtualizado = plainToClass(PlanoAdequacao, {
+      ...planoAdequacao,
+      wkt: body.wkt,
+      situacao: body.status,
+      documentos: [
+        ...(planoAdequacao?.documentos || []),
+        ...documentosParecerPlanoAdequacao,
+      ],
+    });
 
-    const emailProprietario = analiseSocioambiental.propriedade?.proprietarios[0].pessoa.email;
-    const proprietario = analiseSocioambiental.propriedade?.proprietarios[0].pessoa.nome;
-    const telefone = analiseSocioambiental.propriedade?.proprietarios[0].pessoa.telefone;
+    const emailProprietario =
+      analiseSocioambiental.propriedade?.proprietarios[0].pessoa.email;
+    const proprietario =
+      analiseSocioambiental.propriedade?.proprietarios[0].pessoa.nome;
+    const telefone =
+      analiseSocioambiental.propriedade?.proprietarios[0].pessoa.telefone;
     const analise = 'Plano de Adequação : ';
 
     const dados = {
-      produtor: proprietario, propriedade: analiseSocioambiental.propriedade?.nomePropriedade,
-      carFederal: analiseSocioambiental.propriedade?.carFederal, etapa: analise, telefone,
+      produtor: proprietario,
+      propriedade: analiseSocioambiental.propriedade?.nomePropriedade,
+      carFederal: analiseSocioambiental.propriedade?.carFederal,
+      etapa: analise,
+      telefone,
     };
     await this.mensagemService.enviarMensagenStatus(dados);
 
@@ -578,7 +723,6 @@ export class AnaliseSocioambientalService {
       subject: 'Análise plano de adequação',
       template: new PlanoAdequacaoAnalisadoTemplate({}),
     });
-
 
     return this.planoAdequacaoRepository.save(planoAdequacaoAtualizado);
   }
@@ -590,6 +734,4 @@ export class AnaliseSocioambientalService {
   async buscarOrgaoEmissorAutorizacaoSupressao() {
     return this.orgaoEmissorAutorizacaoSupressaoRepository.find();
   }
-
-
 }

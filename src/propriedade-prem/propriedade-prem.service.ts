@@ -812,6 +812,8 @@ export class PropriedadePremService {
         propriedade.analise?.deteccoes.map((deteccao) => ({
           tipo: deteccao.tipo,
           areaHa: deteccao.area_ha,
+          areaARegenerar: deteccao.areaARegenerar,
+          idDeteccoes: deteccao.id,
         })) ?? [],
     };
 
