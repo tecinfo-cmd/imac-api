@@ -1,4 +1,4 @@
-import { forwardRef, Module } from '@nestjs/common';
+import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { AnaliseSocioambientalController } from './analise-socioambiental.controller';
 import { AnaliseSocioambientalService } from './analise-socioambiental.service';
@@ -15,7 +15,7 @@ import { EmailService } from '../../email/email.service';
 import { UsuarioModule } from '../../usuario/usuario.module';
 import { MulterModule } from '@nestjs/platform-express';
 import { MensagemService } from '../../message/mensagem.service';
-
+import { DeteccoesAgrotools } from '../../elegibilidade/entities/deteccoes-agrotools.entity';
 
 @Module({
   imports: [
@@ -25,7 +25,9 @@ import { MensagemService } from '../../message/mensagem.service';
       },
       fileFilter: (_, file, cb) => {
         // Re-encodifica o nome do arquivo de latin1 para utf8
-        file.originalname = Buffer.from(file.originalname, 'latin1').toString('utf8');
+        file.originalname = Buffer.from(file.originalname, 'latin1').toString(
+          'utf8',
+        );
         cb(null, true);
       },
     }),
@@ -37,11 +39,17 @@ import { MensagemService } from '../../message/mensagem.service';
       RetornoAnaliseEntity,
       Documento,
       ResponsavelTecnico,
-      PlanoAdequacao
+      PlanoAdequacao,
+      DeteccoesAgrotools,
     ]),
-    UsuarioModule
+    UsuarioModule,
   ],
   controllers: [AnaliseSocioambientalController],
-  providers: [AnaliseSocioambientalService, DocumentoUploadService, EmailService, MensagemService],
+  providers: [
+    AnaliseSocioambientalService,
+    DocumentoUploadService,
+    EmailService,
+    MensagemService,
+  ],
 })
 export class AnaliseSocioambientalModule {}
