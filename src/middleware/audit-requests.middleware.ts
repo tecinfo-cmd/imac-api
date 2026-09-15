@@ -4,7 +4,7 @@ import { AuditoriaService } from 'src/auditoria/auditoria.service';
 
 @Injectable()
 export class AuditRequestsMiddleware implements NestMiddleware {
-  constructor(private auditoriaService: AuditoriaService) { }
+  constructor(private auditoriaService: AuditoriaService) {}
 
   use(req: Request, res: Response, next: NextFunction): void {
     const start = Date.now();
@@ -38,7 +38,7 @@ export class AuditRequestsMiddleware implements NestMiddleware {
         corpoResposta: responseBody,
         erro: isError ? responseBody : null,
         duracaoMs: duration,
-        dataHora: new Date(this.getCuiabaFormattedTimestamp())
+        dataHora: new Date(this.getCuiabaFormattedTimestamp()),
       };
 
       this.auditoriaService.create(auditoria);
@@ -68,7 +68,7 @@ export class AuditRequestsMiddleware implements NestMiddleware {
       hour: '2-digit',
       minute: '2-digit',
       second: '2-digit',
-      hour12: false
+      hour12: false,
     });
 
     const parts = formatter.formatToParts(new Date());

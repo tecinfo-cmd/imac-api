@@ -404,7 +404,7 @@ export class AgrotoolsService {
       );
 
       //TODO AGROTOOLS NÃO RETORNA LEGENDA PARA PLANO DE ADEQUAÇÃO
-     /* const legendas = data.legends.map(
+      /* const legendas = data.legends.map(
         (l) =>
           ({
             descricao: l.criteria,
@@ -590,10 +590,9 @@ export class AgrotoolsService {
     }
 
     if (
-      solicitacaoEligibilidade.status !==
-      StatusSolicitacaoEligibilidade.Pendente
+      solicitacaoEligibilidade.status !==  StatusSolicitacaoEligibilidade.Pendente
     ) {
-      throw new BadRequestException('Solicitação ja processada');
+      return solicitacaoEligibilidade;
     }
 
     if (solicitacaoEligibilidade.transactionId != null) {
@@ -1087,25 +1086,18 @@ export class AgrotoolsService {
 
   private async verificaContestacoesSemImagem() {
     const contestacoesAnalisesSalvasSemImagem =
-      await this.retornoAnaliseRepository.find({
-        where: {
-          contestacaoId: Not(IsNull()),
-          propriedade: {
-            territorios: {
-              imagemContestacao: IsNull(),
-            },
-          },
-          planoAdequacao: {
-            adequacaoId: IsNull(),
-          },
-        },
-        relations: [
-          'deteccoes',
-          'propriedade',
-          'propriedade.territorios',
-          'planoAdequacao',
-        ],
-      });
+      await this.retornoAnaliseRepository
+        .createQueryBuilder('retornoAnalise')
+        .innerJoinAndSelect('retornoAnalise.propriedade', 'propriedade')
+        .innerJoinAndSelect('propriedade.territorios', 'territorios')
+        .leftJoinAndSelect('retornoAnalise.planoAdequacao', 'planoAdequacao')
+        .leftJoinAndSelect('retornoAnalise.deteccoes', 'deteccoes')
+        .where('retornoAnalise.contestacaoId IS NOT NULL')
+        .andWhere('territorios.imagemContestacao IS NULL')
+        .andWhere(
+          '(planoAdequacao.id IS NULL OR planoAdequacao.adequacaoId IS NULL)',
+        )
+        .getMany();
 
     await Promise.allSettled(
       contestacoesAnalisesSalvasSemImagem.flatMap((analise) => {
